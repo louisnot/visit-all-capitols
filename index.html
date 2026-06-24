@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The 50 Capitals Loop</title>
+<meta name="description" content="A road-trip route through every U.S. state capital, with arrows on the real map." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d1117; --surface:#151c26; --surface2:#1b2431; --line:#27303d;
+    --ink:#e9edf2; --muted:#8b97a6; --faint:#5b6573;
+    --land:#1a222e; --landstroke:#2c3847;
+    --green:#1f7d4d; --greenline:#46e08a; --greendot:#7bf2ab;
+    --done:#6b7686; --shield:#f2f4f7; --sig:#f4b740;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{display:flex;flex-direction:column;height:100vh}
+  header{padding:14px 18px 12px;border-bottom:1px solid var(--line);
+    display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 18px;
+    background:linear-gradient(180deg,#111822,#0d1117)}
+  h1{font-family:Oswald,system-ui,sans-serif;font-weight:600;letter-spacing:.06em;
+    text-transform:uppercase;font-size:18px;margin:0}
+  h1 .num{color:var(--sig)}
+  .sub{color:var(--muted);font-size:12.5px;letter-spacing:.02em}
+  .totals{margin-left:auto;display:flex;gap:18px;font-size:12px;color:var(--muted)}
+  .totals b{display:block;font-family:Oswald;font-weight:600;font-size:17px;color:var(--ink);letter-spacing:.04em}
+  .toggles{display:flex;flex-wrap:wrap;gap:8px;width:100%;margin-top:4px;align-items:center}
+  .toggles button{font:inherit;font-size:11.5px;letter-spacing:.04em;cursor:pointer;
+    background:var(--surface);color:var(--muted);border:1px solid var(--line);
+    border-radius:999px;padding:4px 12px;transition:.15s}
+  .toggles button.on{background:var(--surface2);color:var(--ink);border-color:#3a4757}
+  .toggles button:hover{color:var(--ink)}
+  .key{display:flex;gap:14px;margin-left:auto;font-size:11px;color:var(--muted);align-items:center}
+  .key i{font-style:normal;display:inline-flex;align-items:center;gap:5px}
+  .swatch{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .swatch.g{background:var(--green);border:1px solid var(--greenline)}
+  .swatch.r{width:18px;height:0;border-top:2.4px solid #34d399;border-radius:2px}
+  .swatch.c{width:18px;height:0;border-top:2.4px dashed var(--faint)}
+
+  .main{display:flex;flex:1;min-height:0}
+  .mapcol{flex:1.55;min-width:0;position:relative;background:radial-gradient(120% 90% at 50% 0%,#121a25 0%,#0d1117 70%)}
+  #map{width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+  #map:active{cursor:grabbing}
+  .zoomctl{position:absolute;right:10px;bottom:10px;z-index:6;display:flex;flex-direction:column;gap:6px}
+  .zoomctl button{width:38px;height:38px;font-size:20px;line-height:1;cursor:pointer;
+    background:#0b1018e6;color:var(--ink);border:1px solid #33414f;border-radius:9px;
+    display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);
+    transition:background .15s,border-color .15s,transform .08s;-webkit-tap-highlight-color:transparent}
+  .zoomctl button:hover{background:var(--surface2);border-color:#3a4757}
+  .zoomctl button:active{transform:scale(.93)}
+  .zoomctl .reset{font-size:16px}
+  .zoomhint{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:6;
+    pointer-events:none;font-size:12px;letter-spacing:.02em;color:var(--ink);
+    background:#0b1018d9;border:1px solid #33414f;border-radius:999px;padding:6px 14px;
+    backdrop-filter:blur(3px);transition:opacity .6s ease;white-space:nowrap}
+  .zoomhint.hide{opacity:0}
+  .state{fill:var(--land);stroke:var(--landstroke);stroke-width:.6;transition:fill .15s;vector-effect:non-scaling-stroke}
+  .state.visited{fill:var(--green);stroke:var(--greenline);stroke-width:1}
+  .state:hover{fill:#222d3b}
+  .state.visited:hover{fill:#26895a}
+  .seg{fill:none;stroke-width:2.1;stroke-linecap:round;opacity:.95;cursor:pointer;transition:stroke-width .12s,opacity .12s;vector-effect:non-scaling-stroke}
+  .seg.connector{stroke-dasharray:3 5;opacity:.55}
+  .seg.dim{opacity:.14}
+  .seg.hot{stroke-width:4.6;opacity:1}
+  .stop circle{stroke:#0d1117;stroke-width:1.4}
+  .stop text{font-family:Oswald;font-weight:500;font-size:9.5px;fill:#cfd6df;letter-spacing:.02em;pointer-events:none;
+    paint-order:stroke;stroke:#0d1117cc;stroke-width:2.4px}
+  .stop.hot text{fill:#fff;font-weight:600}
+  .stop.home circle{fill:var(--shield)}
+  .stop.home text{fill:#fff;font-weight:600}
+  .done circle{fill:var(--greendot);stroke:#0d1117;stroke-width:1.2}
+  .done text{font-family:Oswald;font-size:9px;fill:var(--greendot);letter-spacing:.02em;
+    paint-order:stroke;stroke:#0d1117cc;stroke-width:2.4px}
+
+  .tip{position:absolute;pointer-events:none;z-index:5;max-width:236px;
+    background:#0b1018f2;border:1px solid #33414f;border-radius:9px;padding:9px 11px;
+    font-size:12.5px;line-height:1.35;opacity:0;transform:translateY(4px);
+    transition:opacity .12s,transform .12s;backdrop-filter:blur(3px)}
+  .tip.show{opacity:1;transform:none}
+  .tip .route{font-family:Oswald;font-weight:600;letter-spacing:.02em;font-size:13px}
+  .tip .meta{color:var(--sig);font-family:Oswald;letter-spacing:.03em;margin:2px 0 4px}
+  .tip .note{color:var(--muted)}
+
+  .panel{flex:1;min-width:300px;max-width:430px;overflow-y:auto;border-left:1px solid var(--line);background:var(--bg)}
+  .leg h2{font-family:Oswald;font-weight:600;text-transform:uppercase;letter-spacing:.07em;font-size:12.5px;margin:0;
+    padding:11px 16px 9px;display:flex;align-items:center;gap:10px;position:sticky;top:0;background:#0f151ef2;backdrop-filter:blur(4px);z-index:2}
+  .leg h2 .dot{width:9px;height:9px;border-radius:50%;flex:none}
+  .leg h2 .lg{color:var(--faint);font-weight:400;margin-left:auto;font-size:11px;letter-spacing:.03em}
+  .leg h2{cursor:pointer}
+  .leg h2:hover{background:#16202c}
+  .row{display:grid;grid-template-columns:26px 1fr;gap:10px;padding:9px 16px 11px;cursor:pointer;border-top:1px solid #1a212c;transition:background .12s}
+  .row:hover,.row.hot{background:var(--surface)}
+  .idx{font-family:Oswald;font-weight:600;color:var(--faint);font-size:13px;text-align:right;padding-top:1px}
+  .row.hot .idx{color:var(--sig)}
+  .city{font-family:Oswald;font-weight:600;letter-spacing:.02em;font-size:14.5px}
+  .city span{color:var(--muted);font-weight:400;font-size:12px}
+  .drive{display:flex;align-items:center;gap:8px;margin:3px 0 4px;font-size:11.5px;color:var(--sig);font-family:Oswald;letter-spacing:.03em}
+  .drive .arr{color:var(--faint)}
+  .note{font-size:12.5px;color:var(--muted);line-height:1.4}
+  .flights{padding:14px 16px 26px;border-top:1px solid var(--line)}
+  .flights h2{font-family:Oswald;text-transform:uppercase;letter-spacing:.07em;font-size:12.5px;margin:0 0 8px}
+  .flight{display:flex;gap:10px;font-size:12.5px;color:var(--muted);padding:6px 0;border-top:1px solid #1a212c}
+  .flight b{font-family:Oswald;color:var(--ink);font-weight:600;letter-spacing:.02em}
+  .plane{color:var(--sig)}
+
+  .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;
+    gap:10px;color:var(--muted);font-size:13px;background:var(--bg);z-index:9;text-align:center;padding:24px}
+  .spin{width:26px;height:26px;border:3px solid #2a3543;border-top-color:var(--sig);border-radius:50%;animation:sp 1s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .overlay a{color:var(--sig)}
+  @media(max-width:860px){
+    .main{flex-direction:column}
+    .mapcol{flex:none;height:50vh}
+    .panel{max-width:none;border-left:none;border-top:1px solid var(--line)}
+    .totals{order:3;width:100%;margin:6px 0 0}
+    .key{display:none}
+  }
+  @media(max-width:560px){
+    header{padding:10px 12px 10px}
+    h1{font-size:16px}
+    .sub{font-size:11.5px}
+    .mapcol{height:40vh}
+    .totals{gap:14px;font-size:11px}
+    .toggles button{font-size:11px;padding:4px 10px}
+    .zoomctl button{width:42px;height:42px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>The <span class="num">50</span> Capitals Loop</h1>
+    <span class="sub">NYC &rarr; 44 lower-48 capitals &rarr; NYC &middot; 4 states already done</span>
+    <div class="totals">
+      <div>Drive<b id="tMiles">&mdash;</b></div>
+      <div>Wheel time<b id="tHours">&mdash;</b></div>
+      <div>Stops left<b>46</b></div>
+    </div>
+    <div class="toggles">
+      <button id="bLabels" class="on">Labels</button>
+      <button id="bDone" class="on">Visited capitals</button>
+      <button id="bReset">Reset highlight</button>
+      <div class="key">
+        <i><span class="swatch g"></span>Visited</i>
+        <i><span class="swatch r"></span>Drive (direction)</i>
+        <i><span class="swatch c"></span>Connector</i>
+      </div>
+    </div>
+  </header>
+  <div class="main">
+    <div class="mapcol">
+      <svg id="map"></svg>
+      <div class="zoomctl" id="zoomctl">
+        <button data-z="in" title="Zoom in" aria-label="Zoom in">+</button>
+        <button data-z="out" title="Zoom out" aria-label="Zoom out">&minus;</button>
+        <button data-z="reset" class="reset" title="Reset view" aria-label="Reset view">&#x2922;</button>
+      </div>
+      <div class="zoomhint" id="zoomhint">Scroll / pinch to zoom &middot; drag to pan</div>
+      <div class="tip" id="tip"></div>
+      <div class="overlay" id="overlay"><div class="spin"></div><div>Loading the map&hellip;</div></div>
+    </div>
+    <div class="panel" id="panel"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+<script>
+const US_ATLAS="https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
+const VISITED=new Set(["Massachusetts","New York","Vermont","Tennessee"]);
+
+const route=[
+  {n:"New York City",st:"start",lat:40.7128,lon:-74.0060,home:true},
+  {n:"Hartford",st:"CT",lat:41.7637,lon:-72.6851},
+  {n:"Providence",st:"RI",lat:41.8240,lon:-71.4128},
+  {n:"Concord",st:"NH",lat:43.2081,lon:-71.5376},
+  {n:"Augusta",st:"ME",lat:44.3106,lon:-69.7795},
+  {n:"Trenton",st:"NJ",lat:40.2206,lon:-74.7597},
+  {n:"Dover",st:"DE",lat:39.1582,lon:-75.5244},
+  {n:"Annapolis",st:"MD",lat:38.9784,lon:-76.4922},
+  {n:"Harrisburg",st:"PA",lat:40.2732,lon:-76.8867},
+  {n:"Richmond",st:"VA",lat:37.5407,lon:-77.4360},
+  {n:"Raleigh",st:"NC",lat:35.7796,lon:-78.6382},
+  {n:"Columbia",st:"SC",lat:34.0007,lon:-81.0348},
+  {n:"Atlanta",st:"GA",lat:33.7490,lon:-84.3880},
+  {n:"Tallahassee",st:"FL",lat:30.4383,lon:-84.2807},
+  {n:"Montgomery",st:"AL",lat:32.3792,lon:-86.3077},
+  {n:"Jackson",st:"MS",lat:32.2988,lon:-90.1848},
+  {n:"Baton Rouge",st:"LA",lat:30.4515,lon:-91.1871},
+  {n:"Austin",st:"TX",lat:30.2672,lon:-97.7431},
+  {n:"Oklahoma City",st:"OK",lat:35.4676,lon:-97.5164},
+  {n:"Santa Fe",st:"NM",lat:35.6870,lon:-105.9378},
+  {n:"Phoenix",st:"AZ",lat:33.4484,lon:-112.0740},
+  {n:"Salt Lake City",st:"UT",lat:40.7608,lon:-111.8910},
+  {n:"Carson City",st:"NV",lat:39.1638,lon:-119.7674},
+  {n:"Sacramento",st:"CA",lat:38.5816,lon:-121.4944},
+  {n:"Salem",st:"OR",lat:44.9429,lon:-123.0351},
+  {n:"Olympia",st:"WA",lat:47.0379,lon:-122.9007},
+  {n:"Boise",st:"ID",lat:43.6150,lon:-116.2023},
+  {n:"Helena",st:"MT",lat:46.5891,lon:-112.0391},
+  {n:"Bismarck",st:"ND",lat:46.8083,lon:-100.7837},
+  {n:"Pierre",st:"SD",lat:44.3683,lon:-100.3510},
+  {n:"Cheyenne",st:"WY",lat:41.1400,lon:-104.8202},
+  {n:"Denver",st:"CO",lat:39.7392,lon:-104.9903},
+  {n:"Lincoln",st:"NE",lat:40.8136,lon:-96.7026},
+  {n:"Topeka",st:"KS",lat:39.0473,lon:-95.6752},
+  {n:"Des Moines",st:"IA",lat:41.5868,lon:-93.6250},
+  {n:"St. Paul",st:"MN",lat:44.9537,lon:-93.0900},
+  {n:"Madison",st:"WI",lat:43.0731,lon:-89.4012},
+  {n:"Springfield",st:"IL",lat:39.7817,lon:-89.6501},
+  {n:"Jefferson City",st:"MO",lat:38.5767,lon:-92.1735},
+  {n:"Indianapolis",st:"IN",lat:39.7684,lon:-86.1581},
+  {n:"Lansing",st:"MI",lat:42.7325,lon:-84.5555},
+  {n:"Columbus",st:"OH",lat:39.9612,lon:-82.9988},
+  {n:"Frankfort",st:"KY",lat:38.2009,lon:-84.8733},
+  {n:"Charleston",st:"WV",lat:38.3498,lon:-81.6326},
+  {n:"New York City",st:"finish",lat:40.7128,lon:-74.0060,home:true}
+];
+const notes=[
+  "Out of the city, up I-95 into New England.",
+  "Quick hop across Connecticut into Rhode Island.",
+  "Skirt Boston's orbit and head north.",
+  "I-95 deep into Maine \u2014 pines and toll booths.",
+  "The big reset south, back past NYC. Plan a full day.",
+  "Jersey Turnpike, then over the Delaware Memorial Bridge.",
+  "Cross the head of the Chesapeake to the Bay.",
+  "Up past Baltimore's western edge on I-83.",
+  "Thread the DC sprawl \u2014 time it outside rush hour.",
+  "Easy I-85 run south.",
+  "Carolina pine country on I-95/I-20.",
+  "I-20 straight west into Georgia.",
+  "Drop down into the Florida panhandle.",
+  "Back up through south Alabama.",
+  "Across the Deep South on I-65 then I-20.",
+  "South toward bayou country.",
+  "The long Gulf-to-Texas haul on I-10.",
+  "Straight up I-35 over the Red River.",
+  "Plains tilt up into high desert.",
+  "Down through New Mexico into Sonoran heat.",
+  "Long climb north out of the desert \u2014 worth an overnight.",
+  "US-50 across Nevada, the \u201cLoneliest Road in America.\u201d",
+  "Over Donner Pass and down into California.",
+  "I-5 north, the Cascades off your right shoulder.",
+  "Short run up past Portland.",
+  "East across the Columbia River Gorge.",
+  "Up into the Montana Rockies.",
+  "The big empty across the northern plains.",
+  "Due south through the Dakotas.",
+  "Down the western flank of the Black Hills.",
+  "Quick I-25 sprint south.",
+  "Out onto the open Nebraska plains.",
+  "South into Kansas.",
+  "Northeast through the corn belt.",
+  "Up I-35 into Minnesota.",
+  "Southeast toward the Wisconsin Dells.",
+  "Around Chicago's western flank.",
+  "Over the Mississippi into Missouri.",
+  "East through St. Louis.",
+  "North across the line into Michigan.",
+  "Southeast into Ohio.",
+  "Through Cincinnati into bluegrass country.",
+  "East, climbing into the Appalachians.",
+  "The long haul back over the mountains \u2014 home."
+];
+const legs=[
+  {t:"New England",a:1,b:4},{t:"Mid-Atlantic",a:5,b:9},{t:"Southeast Coast",a:10,b:13},
+  {t:"Gulf South",a:14,b:16},{t:"South Central",a:17,b:18},{t:"Desert Southwest",a:19,b:20},
+  {t:"Great Basin",a:21,b:23},{t:"Pacific Northwest",a:24,b:26},{t:"N. Rockies & Plains",a:27,b:29},
+  {t:"Front Range",a:30,b:31},{t:"Central Plains",a:32,b:34},{t:"Upper Midwest",a:35,b:38},
+  {t:"Great Lakes & Ohio",a:39,b:41},{t:"Appalachia \u2192 home",a:42,b:43}
+];
+const doneCaps=[
+  {n:"Boston",st:"MA",lat:42.3601,lon:-71.0589},
+  {n:"Albany",st:"NY",lat:42.6526,lon:-73.7562},
+  {n:"Montpelier",st:"VT",lat:44.2601,lon:-72.5754},
+  {n:"Nashville",st:"TN",lat:36.1627,lon:-86.7816}
+];
+
+const R=3958.8,rad=Math.PI/180,CIRC=1.18,MPH=60;
+function haversine(a,b){const dLat=(b.lat-a.lat)*rad,dLon=(b.lon-a.lon)*rad;
+  const s=Math.sin(dLat/2)**2+Math.cos(a.lat*rad)*Math.cos(b.lat*rad)*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(s));}
+function hm(h){let H=Math.floor(h),m=Math.round((h-H)*60);if(m===60){H++;m=0;}return H+"h"+(m?(" "+m+"m"):"");}
+const color=d3.interpolateRgbBasis(["#38bdf8","#34d399","#a3e635","#facc15","#fb923c","#f43f5e"]);
+
+const segs=[];
+for(let i=0;i<route.length-1;i++){
+  const mi=haversine(route[i],route[i+1])*CIRC;
+  segs.push({i,a:route[i],b:route[i+1],miles:mi,hours:mi/MPH,note:notes[i],
+    connector:route[i].home||route[i+1].home,t:i/(route.length-2)});
+}
+const totMiles=segs.reduce((s,d)=>s+d.miles,0),totHours=segs.reduce((s,d)=>s+d.hours,0);
+document.getElementById('tMiles').textContent=Math.round(totMiles/50)*50+" mi";
+document.getElementById('tHours').textContent=Math.round(totHours)+" h";
+
+const svg=d3.select("#map"),mapcol=document.querySelector(".mapcol"),tip=document.getElementById("tip");
+const defs=svg.append("defs");
+const gZoom=svg.append("g");
+const gLand=gZoom.append("g"),gSeg=gZoom.append("g"),gDone=gZoom.append("g"),gStop=gZoom.append("g");
+const zoom=d3.zoom().scaleExtent([1,9]).on("zoom",zoomed);
+svg.call(zoom);
+function zoomed(ev){
+  const t=ev.transform;gZoom.attr("transform",t);
+  const inv=1/t.k;  // keep point markers + labels at constant screen size
+  gStop.selectAll("g").attr("transform",function(){return `translate(${this.dataset.x},${this.dataset.y}) scale(${inv})`;});
+  gDone.selectAll("g").attr("transform",function(){return `translate(${this.dataset.x},${this.dataset.y}) scale(${inv})`;});
+}
+segs.forEach(s=>{
+  defs.append("marker").attr("id","ah"+s.i).attr("viewBox","0 0 10 10")
+    .attr("refX",8.5).attr("refY",5).attr("markerWidth",6).attr("markerHeight",6)
+    .attr("orient","auto-start-reverse")
+    .append("path").attr("d","M0,0 L10,5 L0,10 L3.2,5 Z")
+    .attr("fill",s.connector?"#5b6573":color(s.t));
+});
+
+let proj,path,statesFC=null,routePts=[];
+function draw(){
+  const W=mapcol.clientWidth,H=mapcol.clientHeight;
+  svg.attr("width",W).attr("height",H);
+  zoom.translateExtent([[0,0],[W,H]]).extent([[0,0],[W,H]]);
+  svg.call(zoom.transform,d3.zoomIdentity);
+  if(!statesFC) return;
+  const rightPad=W<700?24:150;
+  proj=d3.geoAlbersUsa().fitExtent([[16,18],[W-rightPad,H-18]],statesFC);
+  path=d3.geoPath(proj);
+
+  gLand.selectAll("path").data(statesFC.features).join("path")
+    .attr("class",d=>"state"+(VISITED.has(d.properties.name)?" visited":""))
+    .attr("d",path)
+    .each(function(d){ this.querySelector("title")||d3.select(this).append("title")
+      .text(d.properties.name+(VISITED.has(d.properties.name)?" \u2713 visited":"")); });
+
+  const P=route.map(d=>proj([d.lon,d.lat]));
+  routePts=P;
+  gSeg.selectAll("path").remove();
+  segs.forEach(s=>{
+    const p0=P[s.i],p1=P[s.i+1];if(!p0||!p1)return;
+    const mx=(p0[0]+p1[0])/2,my=(p0[1]+p1[1])/2,dx=p1[0]-p0[0],dy=p1[1]-p0[1],off=0.085;
+    const cx=mx-dy*off,cy=my+dx*off;
+    gSeg.append("path").attr("class","seg"+(s.connector?" connector":""))
+      .attr("d",`M${p0[0]},${p0[1]} Q${cx},${cy} ${p1[0]},${p1[1]}`)
+      .attr("stroke",s.connector?"#5b6573":color(s.t))
+      .attr("marker-end",`url(#ah${s.i})`).attr("data-seg",s.i)
+      .on("mousemove",e=>showTip(e,s))
+      .on("mouseenter",()=>hot(s.i+1)).on("mouseleave",()=>{hideTip();clearHot();});
+  });
+  gDone.selectAll("g").remove();
+  doneCaps.forEach(d=>{const p=proj([d.lon,d.lat]);if(!p)return;
+    const g=gDone.append("g").attr("class","done").attr("data-x",p[0]).attr("data-y",p[1]).attr("transform",`translate(${p[0]},${p[1]})`);
+    g.append("circle").attr("r",4);
+    g.append("text").attr("x",7).attr("y",3).text(d.n+" \u2713");});
+  gStop.selectAll("g").remove();
+  route.forEach((d,i)=>{const p=P[i];if(!p)return;
+    const g=gStop.append("g").attr("class","stop"+(d.home?" home":"")).attr("data-x",p[0]).attr("data-y",p[1]).attr("transform",`translate(${p[0]},${p[1]})`).attr("data-stop",i);
+    g.append("circle").attr("r",d.home?5:3.6).attr("fill",d.home?null:color(i/(route.length-2)));
+    if(!d.home)g.append("text").attr("x",6).attr("y",3).text(d.n);
+    else g.append("text").attr("x",6).attr("y",-6).text("NYC");
+    g.on("mouseenter",()=>{if(i>0)hot(i);}).on("mouseleave",clearHot);});
+  applyToggles();
+}
+function showTip(e,s){const r=mapcol.getBoundingClientRect();
+  tip.innerHTML=`<div class="route">${s.a.home?"NYC":s.a.n} \u2192 ${s.b.home?"NYC":s.b.n}</div>`+
+    `<div class="meta">\u2248 ${Math.round(s.miles/5)*5} mi \u00b7 ${hm(s.hours)} driving</div>`+
+    `<div class="note">${s.note}</div>`;
+  let x=e.clientX-r.left+14,y=e.clientY-r.top+14;
+  if(x>r.width-248)x=e.clientX-r.left-248;if(y>r.height-92)y=e.clientY-r.top-92;
+  tip.style.left=x+"px";tip.style.top=y+"px";tip.classList.add("show");}
+function hideTip(){tip.classList.remove("show");}
+function hot(stopIdx){clearHot();const segIdx=stopIdx-1;
+  gSeg.selectAll("path").classed("dim",true);
+  gSeg.select(`[data-seg="${segIdx}"]`).classed("dim",false).classed("hot",true).raise();
+  gStop.select(`[data-stop="${stopIdx}"]`).classed("hot",true).raise();
+  const row=document.querySelector(`.row[data-stop="${stopIdx}"]`);
+  if(row){row.classList.add("hot");row.scrollIntoView({block:"nearest",behavior:"smooth"});}}
+function clearHot(){gSeg.selectAll("path").classed("dim",false).classed("hot",false);
+  gStop.selectAll("g").classed("hot",false);
+  document.querySelectorAll(".row.hot").forEach(r=>r.classList.remove("hot"));}
+function zoomToPoints(pts,fill=0.8,maxK=9){
+  pts=(pts||[]).filter(Boolean);if(!pts.length)return;
+  if(!showLabels){showLabels=true;bL.classList.add("on");applyToggles();}
+  const W=mapcol.clientWidth,H=mapcol.clientHeight;
+  const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);
+  const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  const w=Math.max(x1-x0,1),h=Math.max(y1-y0,1),cx=(x0+x1)/2,cy=(y0+y1)/2;
+  let k=Math.min(W/w,H/h)*fill;k=Math.max(1,Math.min(maxK,k));
+  dropHint();
+  svg.transition().duration(450).call(zoom.transform,
+    d3.zoomIdentity.translate(W/2-k*cx,H/2-k*cy).scale(k));}
+
+// panel
+const panel=document.getElementById("panel");
+legs.forEach(leg=>{
+  const mid=Math.round((leg.a+leg.b)/2),c=color(mid/(route.length-2));
+  const legMi=d3.sum(d3.range(leg.a,leg.b+1),i=>segs[i-1].miles);
+  const div=document.createElement("div");div.className="leg";
+  div.innerHTML=`<h2 title="Zoom to this region"><span class="dot" style="background:${c}"></span>${leg.t}<span class="lg">\u2248 ${Math.round(legMi/10)*10} mi</span></h2>`;
+  div.querySelector("h2").addEventListener("click",()=>zoomToPoints(routePts.slice(leg.a-1,leg.b+1),.8));
+  for(let i=leg.a;i<=leg.b;i++){const d=route[i],s=segs[i-1];
+    const row=document.createElement("div");row.className="row";row.dataset.stop=i;
+    row.title="Zoom to this stop";
+    row.innerHTML=`<div class="idx">${i}</div><div>`+
+      `<div class="city">${d.n} <span>${d.st}</span></div>`+
+      `<div class="drive"><span class="arr">\u2197</span>\u2248 ${Math.round(s.miles/5)*5} mi \u00b7 ${hm(s.hours)}</div>`+
+      `<div class="note">${s.note}</div></div>`;
+    row.addEventListener("mouseenter",()=>hot(i));
+    row.addEventListener("mouseleave",clearHot);
+    row.addEventListener("click",()=>{const lo=Math.max(0,i-2),hi=Math.min(route.length-1,i+1);
+      hot(i);zoomToPoints(routePts.slice(lo,hi+1),.7,6);});
+    div.appendChild(row);}
+  panel.appendChild(div);
+});
+const fl=document.createElement("div");fl.className="flights";
+fl.innerHTML=`<h2>+ Two flights</h2>`+
+ `<div class="flight"><span class="plane">\u2708</span><div><b>Juneau, AK</b> &mdash; no road reaches it from the lower 48; fly in (or take the ferry).</div></div>`+
+ `<div class="flight"><span class="plane">\u2708</span><div><b>Honolulu, HI</b> &mdash; fly from the West Coast, ideally bolted onto the Pacific Northwest leg.</div></div>`+
+ `<div class="flight" style="border-top:none;color:var(--faint)"><span style="color:var(--greendot)">\u2713</span><div>Already done (green): Boston MA, Albany NY, Montpelier VT, Nashville TN.</div></div>`;
+panel.appendChild(fl);
+
+// zoom controls
+const zc=document.getElementById("zoomctl");
+zc.querySelector('[data-z="in"]').onclick=()=>svg.transition().duration(200).call(zoom.scaleBy,1.6);
+zc.querySelector('[data-z="out"]').onclick=()=>svg.transition().duration(200).call(zoom.scaleBy,1/1.6);
+zc.querySelector('[data-z="reset"]').onclick=()=>svg.transition().duration(250).call(zoom.transform,d3.zoomIdentity);
+
+// zoom hint — fades on first map interaction or after a few seconds
+const hint=document.getElementById("zoomhint");
+let hintGone=false;
+function dropHint(){if(hintGone||!hint)return;hintGone=true;hint.classList.add("hide");setTimeout(()=>hint.remove(),700);}
+zoom.on("start.hint",dropHint);
+
+// toggles
+let showLabels=window.matchMedia("(min-width:700px)").matches,showDone=true;
+const bL=document.getElementById("bLabels"),bD=document.getElementById("bDone"),bR=document.getElementById("bReset");
+bL.classList.toggle("on",showLabels);
+function applyToggles(){gStop.selectAll("text").style("display",showLabels?null:"none");
+  gDone.style("display",showDone?null:"none");}
+bL.onclick=()=>{showLabels=!showLabels;bL.classList.toggle("on",showLabels);applyToggles();};
+bD.onclick=()=>{showDone=!showDone;bD.classList.toggle("on",showDone);applyToggles();};
+bR.onclick=clearHot;
+
+// load real US map, then draw
+const overlay=document.getElementById("overlay");
+function fail(){
+  overlay.innerHTML='<div>Couldn\u2019t load the U.S. map data.</div>'+
+    '<div style="font-size:12px">Check your connection and refresh \u2014 the map loads from a public CDN '+
+    '(<a href="'+US_ATLAS+'">us-atlas</a>).</div>';
+}
+if(typeof d3==="undefined"||typeof topojson==="undefined"){fail();}
+else{
+  d3.json(US_ATLAS).then(us=>{
+    statesFC=topojson.feature(us,us.objects.states);
+    overlay.style.display="none";
+    draw();
+    setTimeout(dropHint,5000);
+  }).catch(fail);
+}
+let rt;window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(draw,150);});
+</script>
+</body>
+</html>
