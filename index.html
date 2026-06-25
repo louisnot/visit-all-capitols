@@ -80,6 +80,10 @@
   .gem path{fill:var(--gem);stroke:#0d1117;stroke-width:1.1;cursor:pointer;transition:fill .12s}
   .gem:hover path{fill:#ffe7a3}
   .key .gemstar{color:var(--gem);font-size:13px;line-height:1}
+  .fly circle{fill:var(--sig);stroke:#0d1117;stroke-width:1.3;cursor:pointer}
+  .fly:hover circle{fill:#ffd36a}
+  .fly text{font-family:Oswald;font-weight:600;font-size:9.5px;fill:var(--sig);letter-spacing:.02em;cursor:pointer;
+    paint-order:stroke;stroke:#0d1117cc;stroke-width:2.4px}
 
   .tip{position:absolute;pointer-events:none;z-index:5;max-width:236px;
     background:#0b1018f2;border:1px solid #33414f;border-radius:9px;padding:9px 11px;
@@ -141,7 +145,7 @@
 <div class="wrap">
   <header>
     <h1>The <span class="num">50</span> Capitals Loop</h1>
-    <span class="sub">NYC &rarr; 44 lower-48 capitals &rarr; NYC &middot; 4 states already done</span>
+    <span class="sub">NYC &rarr; 44 lower-48 capitals &rarr; NYC &middot; 4 already done &middot; Juneau &amp; Honolulu by air</span>
     <div class="totals">
       <div>Drive<b id="tMiles">&mdash;</b></div>
       <div>Wheel time<b id="tHours">&mdash;</b></div>
@@ -157,6 +161,7 @@
         <i><span class="swatch r"></span>Drive (direction)</i>
         <i><span class="swatch c"></span>Connector</i>
         <i><span class="gemstar">&#9733;</span>Worth a stop</i>
+        <i><span style="color:var(--sig)">&#9992;</span>Fly-in</i>
       </div>
     </div>
   </header>
@@ -288,6 +293,11 @@ const doneCaps=[
   {n:"Montpelier",st:"VT",lat:44.2601,lon:-72.5754},
   {n:"Nashville",st:"TN",lat:36.1627,lon:-86.7816}
 ];
+// The two capitals you can't drive to — shown on the Alaska & Hawaii insets
+const flyCaps=[
+  {n:"Juneau",st:"AK",lat:58.3019,lon:-134.4197,la:"end",note:"No road reaches it from the lower 48 — fly in (or take the ferry)."},
+  {n:"Honolulu",st:"HI",lat:21.3070,lon:-157.8584,note:"Fly from the West Coast, ideally bolted onto the Pacific NW leg."}
+];
 // Worth-a-stop points of interest roughly along the route (toggleable star layer)
 const gems=[
   // New England
@@ -373,7 +383,7 @@ document.getElementById('tHours').textContent=Math.round(totHours)+" h";
 const svg=d3.select("#map"),mapcol=document.querySelector(".mapcol"),tip=document.getElementById("tip");
 const defs=svg.append("defs");
 const gZoom=svg.append("g");
-const gLand=gZoom.append("g"),gSeg=gZoom.append("g"),gDone=gZoom.append("g"),gGem=gZoom.append("g"),gStop=gZoom.append("g");
+const gLand=gZoom.append("g"),gSeg=gZoom.append("g"),gDone=gZoom.append("g"),gGem=gZoom.append("g"),gFly=gZoom.append("g"),gStop=gZoom.append("g");
 const STAR=d3.symbol().type(d3.symbolStar).size(46)();
 const zoom=d3.zoom().scaleExtent([1,9]).on("zoom",zoomed);
 svg.call(zoom);
@@ -384,6 +394,7 @@ function zoomed(ev){
   gStop.selectAll("g").attr("transform",function(){return `translate(${this.dataset.x},${this.dataset.y}) scale(${inv})`;});
   gDone.selectAll("g").attr("transform",function(){return `translate(${this.dataset.x},${this.dataset.y}) scale(${inv})`;});
   gGem.selectAll("g").attr("transform",function(){return `translate(${this.dataset.x},${this.dataset.y}) scale(${inv})`;});
+  gFly.selectAll("g").attr("transform",function(){return `translate(${this.dataset.x},${this.dataset.y}) scale(${inv})`;});
 }
 segs.forEach(s=>{
   defs.append("marker").attr("id","ah"+s.i).attr("viewBox","0 0 10 10")
@@ -442,8 +453,21 @@ function draw(){
     g.append("path").attr("d",STAR);
     g.on("mouseenter",e=>showGemTip(e,d)).on("mousemove",e=>showGemTip(e,d)).on("mouseleave",hideTip)
      .on("click",e=>{e.stopPropagation();showGemTip(e,d);});});
+  gFly.selectAll("g").remove();
+  flyCaps.forEach(d=>{const p=proj([d.lon,d.lat]);if(!p)return;
+    const g=gFly.append("g").attr("class","fly").attr("data-x",p[0]).attr("data-y",p[1]).attr("transform",`translate(${p[0]},${p[1]})`);
+    g.append("circle").attr("r",3.8);
+    g.append("text").attr("x",d.la==="end"?-7:7).attr("y",3).attr("text-anchor",d.la==="end"?"end":null)
+      .text(d.la==="end"?d.n+" ✈":"✈ "+d.n);
+    g.on("mouseenter",e=>showFlyTip(e,d)).on("mousemove",e=>showFlyTip(e,d)).on("mouseleave",hideTip)
+     .on("click",e=>{e.stopPropagation();showFlyTip(e,d);});});
   applyToggles();
 }
+function showFlyTip(e,d){
+  tip.innerHTML=`<div class="route">✈ ${d.n}, ${d.st}</div>`+
+    `<div class="meta">Fly-in capital</div>`+
+    `<div class="note">${d.note}</div>`;
+  placeTip(e);}
 function showGemTip(e,d){
   tip.innerHTML=`<div class="route">★ ${d.n}</div>`+
     `<div class="meta">${d.cat}</div>`+
