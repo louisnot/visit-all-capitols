@@ -86,6 +86,8 @@
     font-size:12.5px;line-height:1.35;opacity:0;transform:translateY(4px);
     transition:opacity .12s,transform .12s;backdrop-filter:blur(3px)}
   .tip.show{opacity:1;transform:none}
+  .tip.pinned{left:10px;right:10px;top:10px;bottom:auto;max-width:none;transform:translateY(-6px)}
+  .tip.pinned.show{transform:none}
   .tip .route{font-family:Oswald;font-weight:600;letter-spacing:.02em;font-size:13px}
   .tip .meta{color:var(--sig);font-family:Oswald;letter-spacing:.03em;margin:2px 0 4px}
   .tip .note{color:var(--muted)}
@@ -442,20 +444,27 @@ function draw(){
      .on("click",e=>{e.stopPropagation();showGemTip(e,d);});});
   applyToggles();
 }
-function showGemTip(e,d){const r=mapcol.getBoundingClientRect();
+function showGemTip(e,d){
   tip.innerHTML=`<div class="route">★ ${d.n}</div>`+
     `<div class="meta">${d.cat}</div>`+
     `<div class="note">${d.note}</div>`;
-  let x=e.clientX-r.left+14,y=e.clientY-r.top+14;
-  if(x>r.width-248)x=e.clientX-r.left-248;if(y>r.height-92)y=e.clientY-r.top-92;
-  tip.style.left=x+"px";tip.style.top=y+"px";tip.classList.add("show");}
-function showTip(e,s){const r=mapcol.getBoundingClientRect();
+  placeTip(e);}
+function placeTip(e){
+  if(window.matchMedia("(max-width:640px)").matches){
+    tip.classList.add("pinned");tip.style.left="";tip.style.top="";
+  }else{
+    tip.classList.remove("pinned");
+    const r=mapcol.getBoundingClientRect();
+    let x=e.clientX-r.left+14,y=e.clientY-r.top+14;
+    if(x>r.width-248)x=e.clientX-r.left-248;if(y>r.height-92)y=e.clientY-r.top-92;
+    tip.style.left=x+"px";tip.style.top=y+"px";
+  }
+  tip.classList.add("show");}
+function showTip(e,s){
   tip.innerHTML=`<div class="route">${s.a.home?"NYC":s.a.n} \u2192 ${s.b.home?"NYC":s.b.n}</div>`+
     `<div class="meta">\u2248 ${Math.round(s.miles/5)*5} mi \u00b7 ${hm(s.hours)} driving</div>`+
     `<div class="note">${s.note}</div>`;
-  let x=e.clientX-r.left+14,y=e.clientY-r.top+14;
-  if(x>r.width-248)x=e.clientX-r.left-248;if(y>r.height-92)y=e.clientY-r.top-92;
-  tip.style.left=x+"px";tip.style.top=y+"px";tip.classList.add("show");}
+  placeTip(e);}
 function hideTip(){tip.classList.remove("show");}
 function hot(stopIdx){clearHot();const segIdx=stopIdx-1;
   gSeg.selectAll("path").classed("dim",true);
