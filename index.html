@@ -14,7 +14,7 @@
     --ink:#e9edf2; --muted:#8b97a6; --faint:#5b6573;
     --land:#1a222e; --landstroke:#2c3847;
     --green:#1f7d4d; --greenline:#46e08a; --greendot:#7bf2ab;
-    --done:#6b7686; --shield:#f2f4f7; --sig:#f4b740;
+    --done:#6b7686; --shield:#f2f4f7; --sig:#f4b740; --gem:#ffce4d;
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%}
@@ -77,6 +77,9 @@
   .done circle{fill:var(--greendot);stroke:#0d1117;stroke-width:1.2}
   .done text{font-family:Oswald;font-size:9px;fill:var(--greendot);letter-spacing:.02em;
     paint-order:stroke;stroke:#0d1117cc;stroke-width:2.4px}
+  .gem path{fill:var(--gem);stroke:#0d1117;stroke-width:1.1;cursor:pointer;transition:fill .12s}
+  .gem:hover path{fill:#ffe7a3}
+  .key .gemstar{color:var(--gem);font-size:13px;line-height:1}
 
   .tip{position:absolute;pointer-events:none;z-index:5;max-width:236px;
     background:#0b1018f2;border:1px solid #33414f;border-radius:9px;padding:9px 11px;
@@ -145,11 +148,13 @@
     <div class="toggles">
       <button id="bLabels" class="on">Labels</button>
       <button id="bDone" class="on">Visited capitals</button>
+      <button id="bGems" class="on">Sights &amp; gems</button>
       <button id="bReset">Reset highlight</button>
       <div class="key">
         <i><span class="swatch g"></span>Visited</i>
         <i><span class="swatch r"></span>Drive (direction)</i>
         <i><span class="swatch c"></span>Connector</i>
+        <i><span class="gemstar">&#9733;</span>Worth a stop</i>
       </div>
     </div>
   </header>
@@ -281,6 +286,70 @@ const doneCaps=[
   {n:"Montpelier",st:"VT",lat:44.2601,lon:-72.5754},
   {n:"Nashville",st:"TN",lat:36.1627,lon:-86.7816}
 ];
+// Worth-a-stop points of interest roughly along the route (toggleable star layer)
+const gems=[
+  // New England
+  {n:"Mark Twain House",lat:41.7670,lon:-72.7010,cat:"Hidden gem · Hartford CT",note:"Twain's whimsical mansion where he wrote Tom Sawyer."},
+  {n:"The Breakers, Newport",lat:41.4699,lon:-71.2986,cat:"Landmark · RI",note:"Gilded-Age Vanderbilt mansion on the cliffs."},
+  {n:"Flume Gorge, Franconia Notch",lat:44.0976,lon:-71.6817,cat:"Nature · NH",note:"Granite gorge boardwalk in the White Mountains."},
+  {n:"Portland Head Light",lat:43.6231,lon:-70.2079,cat:"Scenic view · ME",note:"Maine's most photographed lighthouse, since 1791."},
+  // Mid-Atlantic
+  {n:"Independence Hall",lat:39.9489,lon:-75.1500,cat:"History · Philadelphia",note:"Where the Declaration and Constitution were signed."},
+  {n:"Cape Henlopen State Park",lat:38.7710,lon:-75.0920,cat:"Nature · DE",note:"Dunes, WWII watchtowers, and Atlantic beaches."},
+  {n:"Gettysburg Battlefield",lat:39.8090,lon:-77.2300,cat:"History · PA",note:"Civil-War turning point with a sweeping driving tour."},
+  {n:"Colonial Williamsburg",lat:37.2707,lon:-76.7075,cat:"History · VA",note:"Living-history town near Richmond."},
+  // Southeast Coast
+  {n:"Congaree National Park",lat:33.7948,lon:-80.7821,cat:"Nature · SC",note:"Towering old-growth bottomland forest near Columbia."},
+  {n:"MLK National Historical Park",lat:33.7556,lon:-84.3722,cat:"History · Atlanta",note:"Dr. King's birth home and church."},
+  {n:"Wakulla Springs",lat:30.2358,lon:-84.3025,cat:"Nature · FL",note:"One of the world's deepest springs, south of Tallahassee."},
+  // Gulf South
+  {n:"Edmund Pettus Bridge, Selma",lat:32.4040,lon:-87.0190,cat:"History · AL",note:"Civil-rights landmark on the road west from Montgomery."},
+  {n:"Vicksburg Military Park",lat:32.3460,lon:-90.8480,cat:"History · MS",note:"Mississippi River siege site toward Baton Rouge."},
+  {n:"Louisiana Old State Capitol",lat:30.4486,lon:-91.1900,cat:"Landmark · Baton Rouge",note:"Gothic 'castle on the river.'"},
+  // South Central
+  {n:"Buc-ee's, New Braunfels",lat:29.6800,lon:-98.1100,cat:"Roadside · TX",note:"Texas's legendary mega-stop — a road-trip rite of passage."},
+  {n:"Magnolia Market, Waco",lat:31.5560,lon:-97.1290,cat:"Hidden gem · TX",note:"The Silos shopping district right on I-35."},
+  {n:"OKC National Memorial",lat:35.4730,lon:-97.5170,cat:"History · OK",note:"Reflecting pool and Field of Empty Chairs."},
+  // Desert Southwest
+  {n:"Cadillac Ranch, Amarillo",lat:35.1872,lon:-101.9870,cat:"Roadside · TX",note:"Ten graffiti-covered Cadillacs buried nose-down on Route 66."},
+  {n:"Meow Wolf, Santa Fe",lat:35.6620,lon:-105.9890,cat:"Hidden gem · NM",note:"Surreal walk-through art installation."},
+  {n:"Petrified Forest NP",lat:35.0820,lon:-109.7800,cat:"Nature · AZ",note:"Rainbow badlands and ancient logs on I-40."},
+  {n:"Sedona Red Rocks",lat:34.8697,lon:-111.7610,cat:"Scenic view · AZ",note:"Crimson sandstone buttes north of Phoenix."},
+  // Great Basin
+  {n:"Grand Canyon (South Rim)",lat:36.0570,lon:-112.1410,cat:"Nature · AZ",note:"Worth the detour heading north toward Utah."},
+  {n:"Zion National Park",lat:37.2982,lon:-113.0263,cat:"Nature · UT",note:"Soaring red canyons on the I-15 climb to Salt Lake."},
+  {n:"Bonneville Salt Flats",lat:40.7587,lon:-113.8430,cat:"Scenic view · UT",note:"Blinding-white salt plain west of Salt Lake City."},
+  {n:"Lake Tahoe",lat:39.0968,lon:-120.0324,cat:"Scenic view · NV/CA",note:"Alpine-blue lake between Carson City and Sacramento."},
+  // Pacific Northwest
+  {n:"Crater Lake NP",lat:42.9446,lon:-122.1090,cat:"Nature · OR",note:"The deepest, bluest lake in the U.S."},
+  {n:"Silver Falls State Park",lat:44.8783,lon:-122.6560,cat:"Nature · OR",note:"Trail of Ten Falls just east of Salem."},
+  {n:"Mount Rainier NP",lat:46.8523,lon:-121.7603,cat:"Nature · WA",note:"Glaciered volcano towering over Olympia."},
+  // Northern Rockies & Plains
+  {n:"Multnomah Falls",lat:45.5762,lon:-122.1158,cat:"Scenic view · OR",note:"620-ft falls in the Columbia River Gorge."},
+  {n:"Craters of the Moon",lat:43.4160,lon:-113.5170,cat:"Nature · ID",note:"Otherworldly lava fields east of Boise."},
+  {n:"Glacier National Park",lat:48.6968,lon:-113.7180,cat:"Nature · MT",note:"Going-to-the-Sun Road — a Montana bucket-lister."},
+  {n:"Theodore Roosevelt NP",lat:46.9790,lon:-103.5387,cat:"Nature · ND",note:"Badlands and wild bison near Bismarck."},
+  {n:"Badlands National Park",lat:43.8554,lon:-101.9777,cat:"Nature · SD",note:"Striped spires en route to the Black Hills."},
+  {n:"Mount Rushmore",lat:43.8791,lon:-103.4591,cat:"Landmark · SD",note:"The four presidents in the Black Hills."},
+  {n:"Red Rocks Amphitheatre",lat:39.6655,lon:-105.2050,cat:"Scenic view · CO",note:"Concerts among giant sandstone fins outside Denver."},
+  // Central Plains
+  {n:"Brown v. Board NHS",lat:39.0386,lon:-95.6760,cat:"History · Topeka KS",note:"The school at the heart of the landmark ruling."},
+  {n:"Bridges of Madison County",lat:41.3350,lon:-94.0130,cat:"Hidden gem · IA",note:"Covered bridges southwest of Des Moines."},
+  // Upper Midwest
+  {n:"Minnehaha Falls",lat:44.9153,lon:-93.2110,cat:"Scenic view · MN",note:"53-ft waterfall in the Twin Cities."},
+  {n:"House on the Rock",lat:43.0905,lon:-90.1320,cat:"Hidden gem · WI",note:"Gloriously bizarre roadside attraction near Madison."},
+  {n:"Wisconsin Dells",lat:43.6275,lon:-89.7710,cat:"Roadside · WI",note:"Sandstone gorges and kitschy water-park town."},
+  {n:"Lincoln's Tomb, Springfield",lat:39.8240,lon:-89.6560,cat:"History · IL",note:"Honest Abe's resting place."},
+  {n:"Gateway Arch, St. Louis",lat:38.6247,lon:-90.1848,cat:"Landmark · MO",note:"630-ft stainless arch on the Mississippi."},
+  // Great Lakes & Ohio
+  {n:"Indianapolis Motor Speedway",lat:39.7950,lon:-86.2350,cat:"Landmark · IN",note:"Home of the Indy 500."},
+  {n:"The Henry Ford, Dearborn",lat:42.3030,lon:-83.2340,cat:"Hidden gem · MI",note:"Vast Americana museum near Detroit."},
+  {n:"Hocking Hills State Park",lat:39.4200,lon:-82.5400,cat:"Nature · OH",note:"Caves and waterfalls southeast of Columbus."},
+  // Appalachia -> home
+  {n:"Buffalo Trace Distillery",lat:38.2170,lon:-84.8660,cat:"Hidden gem · Frankfort KY",note:"Oldest continuously operating bourbon distillery."},
+  {n:"New River Gorge NP",lat:38.0700,lon:-81.0800,cat:"Nature · WV",note:"America's newest national park and its iconic bridge."},
+  {n:"Fallingwater",lat:39.9060,lon:-79.4680,cat:"Landmark · PA",note:"Frank Lloyd Wright's house over a waterfall, on the way home."}
+];
 
 const R=3958.8,rad=Math.PI/180,CIRC=1.18,MPH=60;
 function haversine(a,b){const dLat=(b.lat-a.lat)*rad,dLon=(b.lon-a.lon)*rad;
@@ -302,14 +371,17 @@ document.getElementById('tHours').textContent=Math.round(totHours)+" h";
 const svg=d3.select("#map"),mapcol=document.querySelector(".mapcol"),tip=document.getElementById("tip");
 const defs=svg.append("defs");
 const gZoom=svg.append("g");
-const gLand=gZoom.append("g"),gSeg=gZoom.append("g"),gDone=gZoom.append("g"),gStop=gZoom.append("g");
+const gLand=gZoom.append("g"),gSeg=gZoom.append("g"),gDone=gZoom.append("g"),gGem=gZoom.append("g"),gStop=gZoom.append("g");
+const STAR=d3.symbol().type(d3.symbolStar).size(46)();
 const zoom=d3.zoom().scaleExtent([1,9]).on("zoom",zoomed);
 svg.call(zoom);
+svg.on("click.tip",hideTip);  // tap empty map to dismiss a sight tooltip
 function zoomed(ev){
   const t=ev.transform;gZoom.attr("transform",t);
   const inv=1/t.k;  // keep point markers + labels at constant screen size
   gStop.selectAll("g").attr("transform",function(){return `translate(${this.dataset.x},${this.dataset.y}) scale(${inv})`;});
   gDone.selectAll("g").attr("transform",function(){return `translate(${this.dataset.x},${this.dataset.y}) scale(${inv})`;});
+  gGem.selectAll("g").attr("transform",function(){return `translate(${this.dataset.x},${this.dataset.y}) scale(${inv})`;});
 }
 segs.forEach(s=>{
   defs.append("marker").attr("id","ah"+s.i).attr("viewBox","0 0 10 10")
@@ -362,8 +434,21 @@ function draw(){
     if(!d.home)g.append("text").attr("x",6).attr("y",3).text(d.n);
     else g.append("text").attr("x",6).attr("y",-6).text("NYC");
     g.on("mouseenter",()=>{if(i>0)hot(i);}).on("mouseleave",clearHot);});
+  gGem.selectAll("g").remove();
+  gems.forEach(d=>{const p=proj([d.lon,d.lat]);if(!p)return;
+    const g=gGem.append("g").attr("class","gem").attr("data-x",p[0]).attr("data-y",p[1]).attr("transform",`translate(${p[0]},${p[1]})`);
+    g.append("path").attr("d",STAR);
+    g.on("mouseenter",e=>showGemTip(e,d)).on("mousemove",e=>showGemTip(e,d)).on("mouseleave",hideTip)
+     .on("click",e=>{e.stopPropagation();showGemTip(e,d);});});
   applyToggles();
 }
+function showGemTip(e,d){const r=mapcol.getBoundingClientRect();
+  tip.innerHTML=`<div class="route">★ ${d.n}</div>`+
+    `<div class="meta">${d.cat}</div>`+
+    `<div class="note">${d.note}</div>`;
+  let x=e.clientX-r.left+14,y=e.clientY-r.top+14;
+  if(x>r.width-248)x=e.clientX-r.left-248;if(y>r.height-92)y=e.clientY-r.top-92;
+  tip.style.left=x+"px";tip.style.top=y+"px";tip.classList.add("show");}
 function showTip(e,s){const r=mapcol.getBoundingClientRect();
   tip.innerHTML=`<div class="route">${s.a.home?"NYC":s.a.n} \u2192 ${s.b.home?"NYC":s.b.n}</div>`+
     `<div class="meta">\u2248 ${Math.round(s.miles/5)*5} mi \u00b7 ${hm(s.hours)} driving</div>`+
@@ -435,13 +520,15 @@ function dropHint(){if(hintGone||!hint)return;hintGone=true;hint.classList.add("
 zoom.on("start.hint",dropHint);
 
 // toggles
-let showLabels=window.matchMedia("(min-width:700px)").matches,showDone=true;
-const bL=document.getElementById("bLabels"),bD=document.getElementById("bDone"),bR=document.getElementById("bReset");
+let showLabels=window.matchMedia("(min-width:700px)").matches,showDone=true,showGems=true;
+const bL=document.getElementById("bLabels"),bD=document.getElementById("bDone"),bG=document.getElementById("bGems"),bR=document.getElementById("bReset");
 bL.classList.toggle("on",showLabels);
 function applyToggles(){gStop.selectAll("text").style("display",showLabels?null:"none");
-  gDone.style("display",showDone?null:"none");}
+  gDone.style("display",showDone?null:"none");
+  gGem.style("display",showGems?null:"none");}
 bL.onclick=()=>{showLabels=!showLabels;bL.classList.toggle("on",showLabels);applyToggles();};
 bD.onclick=()=>{showDone=!showDone;bD.classList.toggle("on",showDone);applyToggles();};
+bG.onclick=()=>{showGems=!showGems;bG.classList.toggle("on",showGems);applyToggles();};
 bR.onclick=clearHot;
 
 // load real US map, then draw
