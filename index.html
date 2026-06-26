@@ -80,12 +80,18 @@
   .gem path{fill:var(--gem);stroke:#0d1117;stroke-width:1.1;cursor:pointer;transition:fill .12s}
   .gem:hover path{fill:#ffe7a3}
   .key .gemstar{color:var(--gem);font-size:13px;line-height:1}
+  .fly circle{fill:var(--sig);stroke:#0d1117;stroke-width:1.3;cursor:pointer}
+  .fly:hover circle{fill:#ffd36a}
+  .fly text{font-family:Oswald;font-weight:600;font-size:9.5px;fill:var(--sig);letter-spacing:.02em;cursor:pointer;
+    paint-order:stroke;stroke:#0d1117cc;stroke-width:2.4px}
 
   .tip{position:absolute;pointer-events:none;z-index:5;max-width:236px;
     background:#0b1018f2;border:1px solid #33414f;border-radius:9px;padding:9px 11px;
     font-size:12.5px;line-height:1.35;opacity:0;transform:translateY(4px);
     transition:opacity .12s,transform .12s;backdrop-filter:blur(3px)}
   .tip.show{opacity:1;transform:none}
+  .tip.pinned{left:10px;right:10px;top:10px;bottom:auto;max-width:none;transform:translateY(-6px)}
+  .tip.pinned.show{transform:none}
   .tip .route{font-family:Oswald;font-weight:600;letter-spacing:.02em;font-size:13px}
   .tip .meta{color:var(--sig);font-family:Oswald;letter-spacing:.03em;margin:2px 0 4px}
   .tip .note{color:var(--muted)}
@@ -117,6 +123,61 @@
   .spin{width:26px;height:26px;border:3px solid #2a3543;border-top-color:var(--sig);border-radius:50%;animation:sp 1s linear infinite}
   @keyframes sp{to{transform:rotate(360deg)}}
   .overlay a{color:var(--sig)}
+
+  /* ── controls, progress, check-off ── */
+  .toggles button.primary{background:var(--sig);color:#1d1407;border-color:var(--sig);font-weight:600}
+  .toggles button.primary:hover{background:#ffca54;color:#1d1407}
+  .toggles button.primary.active{background:#46e08a;border-color:#46e08a;color:#08160d}
+  .toggles .tdiv{width:1px;height:18px;background:var(--line);margin:0 2px}
+  .progress-wrap{display:flex;align-items:center;gap:10px;width:100%;margin-top:9px;flex-wrap:wrap}
+  .progress{flex:1;min-width:120px;height:7px;border-radius:99px;background:#1b2431;overflow:hidden;border:1px solid var(--line)}
+  .progress .bar{height:100%;width:8%;background:linear-gradient(90deg,#34d399,#7bf2ab);border-radius:99px;
+    transition:width .6s cubic-bezier(.4,0,.2,1)}
+  .progress-txt{font-family:Oswald;font-size:12px;color:var(--muted);letter-spacing:.03em;white-space:nowrap}
+  .progress-txt b{color:var(--greendot);font-size:13px}
+  .tiphint{font-size:11px;color:var(--faint);letter-spacing:.02em}
+
+  .cap{cursor:pointer}
+  .stop.vis circle{fill:var(--greendot);stroke:#0d1117}
+  .stop.vis text{fill:var(--greendot)}
+  .done.todo circle{fill:#3a4656}
+  .done.todo text{fill:var(--muted)}
+  .fly.vis circle{fill:var(--greendot)}
+  .fly.vis text{fill:var(--greendot)}
+
+  .chk{font-family:Oswald;font-weight:600;font-size:12px;color:var(--faint);background:transparent;border:1.5px solid #2c3847;
+    width:24px;height:24px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;
+    transition:.15s;-webkit-tap-highlight-color:transparent;position:relative}
+  .chk:hover{border-color:var(--greenline);color:var(--ink)}
+  .row.done .chk{background:var(--green);border-color:var(--greenline);color:transparent}
+  .row.done .chk::after{content:"✓";position:absolute;color:#fff;font-size:13px}
+  .row.done .city{color:var(--muted)}
+
+  /* ── playback + tour stage, toast, confetti ── */
+  .stage{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:7;
+    max-width:min(580px,calc(100% - 20px));background:#0b1018f5;border:1px solid #33414f;border-radius:12px;
+    padding:10px 12px;backdrop-filter:blur(4px);display:none;align-items:center;gap:12px;box-shadow:0 10px 30px #0009}
+  .stage.show{display:flex}
+  .stage .body{min-width:0;flex:1}
+  .stage .cap-title{font-family:Oswald;font-weight:600;letter-spacing:.02em;font-size:14px;color:var(--ink);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .stage .cap-sub{font-size:12px;color:var(--muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .stage .sbtn{font:inherit;font-size:13px;cursor:pointer;background:var(--surface2);color:var(--ink);
+    border:1px solid #3a4757;border-radius:8px;padding:7px 11px;white-space:nowrap;transition:.12s}
+  .stage .sbtn:hover{background:#26323f}
+  .stage .sbtn:disabled{opacity:.35;cursor:default;background:var(--surface2)}
+  .stage .sbtn.x{background:transparent;border-color:transparent;color:var(--muted);padding:7px 8px;font-size:16px}
+  .stage .rcount{color:var(--muted);font-weight:400;font-size:11.5px}
+  .stage .grp{display:flex;gap:6px;align-items:center}
+  .trail{fill:none;stroke:var(--gem);stroke-width:3.6;stroke-linecap:round;stroke-linejoin:round;
+    vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 4px #ffce4dcc)}
+  .car{font-size:20px}
+  .toast{position:absolute;left:50%;top:14px;transform:translateX(-50%) translateY(-6px);z-index:8;
+    background:#0b1018f5;border:1px solid #46e08a;border-radius:99px;padding:8px 18px;font-size:13px;color:var(--ink);
+    font-family:Oswald;letter-spacing:.02em;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;backdrop-filter:blur(3px)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  #confetti{position:absolute;inset:0;z-index:8;pointer-events:none;display:none}
+
   @media(max-width:860px){
     .main{flex-direction:column}
     .mapcol{flex:none;height:50vh}
@@ -139,13 +200,17 @@
 <div class="wrap">
   <header>
     <h1>The <span class="num">50</span> Capitals Loop</h1>
-    <span class="sub">NYC &rarr; 44 lower-48 capitals &rarr; NYC &middot; 4 states already done</span>
+    <span class="sub">NYC &rarr; 44 lower-48 capitals &rarr; NYC &middot; 4 already done &middot; Juneau &amp; Honolulu by air</span>
     <div class="totals">
       <div>Drive<b id="tMiles">&mdash;</b></div>
       <div>Wheel time<b id="tHours">&mdash;</b></div>
-      <div>Stops left<b>46</b></div>
+      <div>Capitals left<b id="stopsLeft">46</b></div>
     </div>
     <div class="toggles">
+      <button id="bPlay" class="primary">&#9654;&nbsp; Play the drive</button>
+      <button id="bTour" class="primary">&#129517;&nbsp; Guided tour</button>
+      <button id="bShare">&#128279;&nbsp; Share</button>
+      <span class="tdiv"></span>
       <button id="bLabels" class="on">Labels</button>
       <button id="bDone" class="on">Visited capitals</button>
       <button id="bGems" class="on">Sights &amp; gems</button>
@@ -155,7 +220,14 @@
         <i><span class="swatch r"></span>Drive (direction)</i>
         <i><span class="swatch c"></span>Connector</i>
         <i><span class="gemstar">&#9733;</span>Worth a stop</i>
+        <i><span style="color:var(--sig)">&#9992;</span>Fly-in</i>
       </div>
+    </div>
+    <div class="progress-wrap">
+      <span class="progress-txt"><b id="pCount">4</b> / 50 visited</span>
+      <div class="progress"><div class="bar" id="pBar"></div></div>
+      <span class="progress-txt" id="pPct">8%</span>
+      <span class="tiphint">Tap a capital to check it off &middot; saved on this device</span>
     </div>
   </header>
   <div class="main">
@@ -168,6 +240,9 @@
       </div>
       <div class="zoomhint" id="zoomhint">Scroll / pinch to zoom &middot; drag to pan</div>
       <div class="tip" id="tip"></div>
+      <canvas id="confetti"></canvas>
+      <div class="toast" id="toast"></div>
+      <div class="stage" id="stage"></div>
       <div class="overlay" id="overlay"><div class="spin"></div><div>Loading the map&hellip;</div></div>
     </div>
     <div class="panel" id="panel"></div>
@@ -178,7 +253,20 @@
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
 <script>
 const US_ATLAS="https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
-const VISITED=new Set(["Massachusetts","New York","Vermont","Tennessee"]);
+const STATE_NAME={AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",
+  CT:"Connecticut",DE:"Delaware",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",
+  IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",
+  MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",
+  NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",
+  OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",
+  TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming"};
+const TOTAL_CAPS=50, DEFAULT_VISITED=["MA","NY","VT","TN"];
+function loadVisited(){
+  try{const s=localStorage.getItem("caps-visited");if(s)return new Set(JSON.parse(s));}catch(e){}
+  return new Set(DEFAULT_VISITED);
+}
+let visited=loadVisited();
+function saveVisited(){try{localStorage.setItem("caps-visited",JSON.stringify([...visited]));}catch(e){}}
 
 const route=[
   {n:"New York City",st:"start",lat:40.7128,lon:-74.0060,home:true},
@@ -199,6 +287,7 @@ const route=[
   {n:"Jackson",st:"MS",lat:32.2988,lon:-90.1848},
   {n:"Baton Rouge",st:"LA",lat:30.4515,lon:-91.1871},
   {n:"Austin",st:"TX",lat:30.2672,lon:-97.7431},
+  {n:"Little Rock",st:"AR",lat:34.7465,lon:-92.2896},
   {n:"Oklahoma City",st:"OK",lat:35.4676,lon:-97.5164},
   {n:"Santa Fe",st:"NM",lat:35.6870,lon:-105.9378},
   {n:"Phoenix",st:"AZ",lat:33.4484,lon:-112.0740},
@@ -245,7 +334,8 @@ const notes=[
   "Across the Deep South on I-65 then I-20.",
   "South toward bayou country.",
   "The long Gulf-to-Texas haul on I-10.",
-  "Straight up I-35 over the Red River.",
+  "Northeast out of Texas toward the Arkansas line.",
+  "West on I-40 across the Ouachitas into Oklahoma.",
   "Plains tilt up into high desert.",
   "Down through New Mexico into Sonoran heat.",
   "Long climb north out of the desert \u2014 worth an overnight.",
@@ -275,16 +365,21 @@ const notes=[
 ];
 const legs=[
   {t:"New England",a:1,b:4},{t:"Mid-Atlantic",a:5,b:9},{t:"Southeast Coast",a:10,b:13},
-  {t:"Gulf South",a:14,b:16},{t:"South Central",a:17,b:18},{t:"Desert Southwest",a:19,b:20},
-  {t:"Great Basin",a:21,b:23},{t:"Pacific Northwest",a:24,b:26},{t:"N. Rockies & Plains",a:27,b:29},
-  {t:"Front Range",a:30,b:31},{t:"Central Plains",a:32,b:34},{t:"Upper Midwest",a:35,b:38},
-  {t:"Great Lakes & Ohio",a:39,b:41},{t:"Appalachia \u2192 home",a:42,b:43}
+  {t:"Gulf South",a:14,b:16},{t:"South Central",a:17,b:19},{t:"Desert Southwest",a:20,b:21},
+  {t:"Great Basin",a:22,b:24},{t:"Pacific Northwest",a:25,b:27},{t:"N. Rockies & Plains",a:28,b:30},
+  {t:"Front Range",a:31,b:32},{t:"Central Plains",a:33,b:35},{t:"Upper Midwest",a:36,b:39},
+  {t:"Great Lakes & Ohio",a:40,b:42},{t:"Appalachia \u2192 home",a:43,b:44}
 ];
 const doneCaps=[
   {n:"Boston",st:"MA",lat:42.3601,lon:-71.0589},
   {n:"Albany",st:"NY",lat:42.6526,lon:-73.7562},
   {n:"Montpelier",st:"VT",lat:44.2601,lon:-72.5754},
   {n:"Nashville",st:"TN",lat:36.1627,lon:-86.7816}
+];
+// The two capitals you can't drive to — shown on the Alaska & Hawaii insets
+const flyCaps=[
+  {n:"Juneau",st:"AK",lat:58.3019,lon:-134.4197,la:"end",note:"No road reaches it from the lower 48 — fly in (or take the ferry)."},
+  {n:"Honolulu",st:"HI",lat:21.3070,lon:-157.8584,note:"Fly from the West Coast, ideally bolted onto the Pacific NW leg."}
 ];
 // Worth-a-stop points of interest roughly along the route (toggleable star layer)
 const gems=[
@@ -371,7 +466,10 @@ document.getElementById('tHours').textContent=Math.round(totHours)+" h";
 const svg=d3.select("#map"),mapcol=document.querySelector(".mapcol"),tip=document.getElementById("tip");
 const defs=svg.append("defs");
 const gZoom=svg.append("g");
-const gLand=gZoom.append("g"),gSeg=gZoom.append("g"),gDone=gZoom.append("g"),gGem=gZoom.append("g"),gStop=gZoom.append("g");
+const gLand=gZoom.append("g"),gSeg=gZoom.append("g"),gTrail=gZoom.append("g"),gDone=gZoom.append("g"),gGem=gZoom.append("g"),gFly=gZoom.append("g"),gStop=gZoom.append("g"),gCar=gZoom.append("g");
+const trailPath=gTrail.append("path").attr("class","trail").style("display","none");
+const carG=gCar.append("g").style("display","none");
+carG.append("text").attr("class","car").attr("text-anchor","middle").attr("dy",".34em").text("🚗");
 const STAR=d3.symbol().type(d3.symbolStar).size(46)();
 const zoom=d3.zoom().scaleExtent([1,9]).on("zoom",zoomed);
 svg.call(zoom);
@@ -382,6 +480,7 @@ function zoomed(ev){
   gStop.selectAll("g").attr("transform",function(){return `translate(${this.dataset.x},${this.dataset.y}) scale(${inv})`;});
   gDone.selectAll("g").attr("transform",function(){return `translate(${this.dataset.x},${this.dataset.y}) scale(${inv})`;});
   gGem.selectAll("g").attr("transform",function(){return `translate(${this.dataset.x},${this.dataset.y}) scale(${inv})`;});
+  gFly.selectAll("g").attr("transform",function(){return `translate(${this.dataset.x},${this.dataset.y}) scale(${inv})`;});
 }
 segs.forEach(s=>{
   defs.append("marker").attr("id","ah"+s.i).attr("viewBox","0 0 10 10")
@@ -393,6 +492,7 @@ segs.forEach(s=>{
 
 let proj,path,statesFC=null,routePts=[];
 function draw(){
+  if(playing)stopPlay();
   const W=mapcol.clientWidth,H=mapcol.clientHeight;
   svg.attr("width",W).attr("height",H);
   zoom.translateExtent([[0,0],[W,H]]).extent([[0,0],[W,H]]);
@@ -403,18 +503,19 @@ function draw(){
   path=d3.geoPath(proj);
 
   gLand.selectAll("path").data(statesFC.features).join("path")
-    .attr("class",d=>"state"+(VISITED.has(d.properties.name)?" visited":""))
+    .attr("class","state")
     .attr("d",path)
-    .each(function(d){ this.querySelector("title")||d3.select(this).append("title")
-      .text(d.properties.name+(VISITED.has(d.properties.name)?" \u2713 visited":"")); });
+    .each(function(d){ this.querySelector("title")||d3.select(this).append("title").text(d.properties.name); });
 
   const P=route.map(d=>proj([d.lon,d.lat]));
   routePts=P;
   gSeg.selectAll("path").remove();
+  let fullD="";
   segs.forEach(s=>{
     const p0=P[s.i],p1=P[s.i+1];if(!p0||!p1)return;
     const mx=(p0[0]+p1[0])/2,my=(p0[1]+p1[1])/2,dx=p1[0]-p0[0],dy=p1[1]-p0[1],off=0.085;
     const cx=mx-dy*off,cy=my+dx*off;
+    fullD+=(fullD?"":`M${p0[0]},${p0[1]}`)+` Q${cx},${cy} ${p1[0]},${p1[1]}`;
     gSeg.append("path").attr("class","seg"+(s.connector?" connector":""))
       .attr("d",`M${p0[0]},${p0[1]} Q${cx},${cy} ${p1[0]},${p1[1]}`)
       .attr("stroke",s.connector?"#5b6573":color(s.t))
@@ -422,40 +523,67 @@ function draw(){
       .on("mousemove",e=>showTip(e,s))
       .on("mouseenter",()=>hot(s.i+1)).on("mouseleave",()=>{hideTip();clearHot();});
   });
+  trailPath.attr("d",fullD);
+  playSegCum=[0];let _c=0;
+  gSeg.selectAll("path").each(function(){_c+=this.getTotalLength();playSegCum.push(_c);});
+  playTotalLen=_c;
   gDone.selectAll("g").remove();
   doneCaps.forEach(d=>{const p=proj([d.lon,d.lat]);if(!p)return;
-    const g=gDone.append("g").attr("class","done").attr("data-x",p[0]).attr("data-y",p[1]).attr("transform",`translate(${p[0]},${p[1]})`);
+    const g=gDone.append("g").attr("class","done cap").attr("data-st",d.st).attr("data-name",d.n).attr("data-x",p[0]).attr("data-y",p[1]).attr("transform",`translate(${p[0]},${p[1]})`);
     g.append("circle").attr("r",4);
-    g.append("text").attr("x",7).attr("y",3).text(d.n+" \u2713");});
+    g.append("text").attr("x",7).attr("y",3).text(d.n);
+    g.on("click",e=>{e.stopPropagation();toggleVisited(d.st,e);});});
   gStop.selectAll("g").remove();
   route.forEach((d,i)=>{const p=P[i];if(!p)return;
-    const g=gStop.append("g").attr("class","stop"+(d.home?" home":"")).attr("data-x",p[0]).attr("data-y",p[1]).attr("transform",`translate(${p[0]},${p[1]})`).attr("data-stop",i);
+    const g=gStop.append("g").attr("class","stop"+(d.home?" home":" cap")).attr("data-x",p[0]).attr("data-y",p[1]).attr("transform",`translate(${p[0]},${p[1]})`).attr("data-stop",i);
+    if(!d.home){g.attr("data-st",d.st).attr("data-name",d.n);}
     g.append("circle").attr("r",d.home?5:3.6).attr("fill",d.home?null:color(i/(route.length-2)));
     if(!d.home)g.append("text").attr("x",6).attr("y",3).text(d.n);
     else g.append("text").attr("x",6).attr("y",-6).text("NYC");
-    g.on("mouseenter",()=>{if(i>0)hot(i);}).on("mouseleave",clearHot);});
+    g.on("mouseenter",()=>{if(i>0)hot(i);}).on("mouseleave",clearHot);
+    if(!d.home)g.on("click",e=>{e.stopPropagation();toggleVisited(d.st,e);});});
   gGem.selectAll("g").remove();
   gems.forEach(d=>{const p=proj([d.lon,d.lat]);if(!p)return;
     const g=gGem.append("g").attr("class","gem").attr("data-x",p[0]).attr("data-y",p[1]).attr("transform",`translate(${p[0]},${p[1]})`);
     g.append("path").attr("d",STAR);
     g.on("mouseenter",e=>showGemTip(e,d)).on("mousemove",e=>showGemTip(e,d)).on("mouseleave",hideTip)
      .on("click",e=>{e.stopPropagation();showGemTip(e,d);});});
+  gFly.selectAll("g").remove();
+  flyCaps.forEach(d=>{const p=proj([d.lon,d.lat]);if(!p)return;
+    const g=gFly.append("g").attr("class","fly cap").attr("data-st",d.st).attr("data-name",d.n).attr("data-la",d.la||"").attr("data-x",p[0]).attr("data-y",p[1]).attr("transform",`translate(${p[0]},${p[1]})`);
+    g.append("circle").attr("r",3.8);
+    g.append("text").attr("x",d.la==="end"?-7:7).attr("y",3).attr("text-anchor",d.la==="end"?"end":null);
+    g.on("mouseenter",e=>showFlyTip(e,d)).on("mousemove",e=>showFlyTip(e,d)).on("mouseleave",hideTip)
+     .on("click",e=>{e.stopPropagation();toggleVisited(d.st,e);});});
   applyToggles();
+  refreshVisited();
 }
-function showGemTip(e,d){const r=mapcol.getBoundingClientRect();
+function showFlyTip(e,d){
+  tip.innerHTML=`<div class="route">✈ ${d.n}, ${d.st}</div>`+
+    `<div class="meta">Fly-in capital</div>`+
+    `<div class="note">${d.note}</div>`;
+  placeTip(e);}
+function showGemTip(e,d){
   tip.innerHTML=`<div class="route">★ ${d.n}</div>`+
     `<div class="meta">${d.cat}</div>`+
     `<div class="note">${d.note}</div>`;
-  let x=e.clientX-r.left+14,y=e.clientY-r.top+14;
-  if(x>r.width-248)x=e.clientX-r.left-248;if(y>r.height-92)y=e.clientY-r.top-92;
-  tip.style.left=x+"px";tip.style.top=y+"px";tip.classList.add("show");}
-function showTip(e,s){const r=mapcol.getBoundingClientRect();
+  placeTip(e);}
+function placeTip(e){
+  if(window.matchMedia("(max-width:640px)").matches){
+    tip.classList.add("pinned");tip.style.left="";tip.style.top="";
+  }else{
+    tip.classList.remove("pinned");
+    const r=mapcol.getBoundingClientRect();
+    let x=e.clientX-r.left+14,y=e.clientY-r.top+14;
+    if(x>r.width-248)x=e.clientX-r.left-248;if(y>r.height-92)y=e.clientY-r.top-92;
+    tip.style.left=x+"px";tip.style.top=y+"px";
+  }
+  tip.classList.add("show");}
+function showTip(e,s){
   tip.innerHTML=`<div class="route">${s.a.home?"NYC":s.a.n} \u2192 ${s.b.home?"NYC":s.b.n}</div>`+
     `<div class="meta">\u2248 ${Math.round(s.miles/5)*5} mi \u00b7 ${hm(s.hours)} driving</div>`+
     `<div class="note">${s.note}</div>`;
-  let x=e.clientX-r.left+14,y=e.clientY-r.top+14;
-  if(x>r.width-248)x=e.clientX-r.left-248;if(y>r.height-92)y=e.clientY-r.top-92;
-  tip.style.left=x+"px";tip.style.top=y+"px";tip.classList.add("show");}
+  placeTip(e);}
 function hideTip(){tip.classList.remove("show");}
 function hot(stopIdx){clearHot();const segIdx=stopIdx-1;
   gSeg.selectAll("path").classed("dim",true);
@@ -466,6 +594,58 @@ function hot(stopIdx){clearHot();const segIdx=stopIdx-1;
 function clearHot(){gSeg.selectAll("path").classed("dim",false).classed("hot",false);
   gStop.selectAll("g").classed("hot",false);
   document.querySelectorAll(".row.hot").forEach(r=>r.classList.remove("hot"));}
+function toggleVisited(st,e){
+  if(!st)return;
+  const prev=visited.size;
+  if(visited.has(st))visited.delete(st);else visited.add(st);
+  saveVisited();refreshVisited();celebrate(prev,visited.size);
+}
+function refreshVisited(){
+  const vn=new Set([...visited].map(a=>STATE_NAME[a]));
+  gLand.selectAll("path").classed("visited",function(d){return vn.has(d.properties.name);});
+  gStop.selectAll("g.cap").each(function(){const on=visited.has(this.dataset.st);
+    d3.select(this).classed("vis",on);
+    const t=this.querySelector("text");if(t)t.textContent=this.dataset.name+(on?" ✓":"");});
+  gDone.selectAll("g.cap").each(function(){const on=visited.has(this.dataset.st);
+    d3.select(this).classed("vis",on).classed("todo",!on);
+    const t=this.querySelector("text");if(t)t.textContent=this.dataset.name+(on?" ✓":"");});
+  gFly.selectAll("g.cap").each(function(){const on=visited.has(this.dataset.st);
+    d3.select(this).classed("vis",on);
+    const t=this.querySelector("text");if(t){const base=this.dataset.name,end=this.dataset.la==="end";
+      t.textContent=end?(base+" ✈"+(on?" ✓":"")):("✈ "+base+(on?" ✓":""));}});
+  document.querySelectorAll(".row[data-st]").forEach(r=>r.classList.toggle("done",visited.has(r.dataset.st)));
+  updateProgress();
+}
+function updateProgress(){
+  const n=visited.size,pct=Math.round(n/TOTAL_CAPS*100);
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set("pCount",n);set("pPct",pct+"%");set("stopsLeft",TOTAL_CAPS-n);
+  const pb=document.getElementById("pBar");if(pb)pb.style.width=pct+"%";
+}
+function celebrate(prev,now){
+  if(now<=prev)return;
+  if(now===TOTAL_CAPS){flashToast("🎉 All 50 capitals — trip complete!");confettiBurst(2200);}
+  else if(now%10===0){flashToast("🎊 "+now+" / 50 — keep going!");confettiBurst();}
+  else flashToast("✓ "+now+" / 50 visited");
+}
+let toastT;
+function flashToast(msg){const el=document.getElementById("toast");if(!el)return;
+  el.textContent=msg;el.classList.add("show");clearTimeout(toastT);
+  toastT=setTimeout(()=>el.classList.remove("show"),1600);}
+function confettiBurst(ms){
+  const cv=document.getElementById("confetti");if(!cv)return;
+  const r=mapcol.getBoundingClientRect();cv.width=r.width;cv.height=r.height;cv.style.display="block";
+  const ctx=cv.getContext("2d"),colors=["#46e08a","#ffce4d","#38bdf8","#fb923c","#f43f5e","#a3e635"],parts=[];
+  for(let i=0;i<150;i++)parts.push({x:r.width/2,y:r.height*0.32,vx:(Math.random()-0.5)*10,vy:Math.random()*-8-3,
+    g:0.22+Math.random()*0.1,s:4+Math.random()*4,rot:Math.random()*6.3,vr:(Math.random()-0.5)*0.3,c:colors[i%6],life:1});
+  const dur=ms||1700,t0=performance.now();
+  (function frame(t){const e=t-t0;ctx.clearRect(0,0,cv.width,cv.height);
+    parts.forEach(p=>{p.vy+=p.g;p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;p.life=Math.max(0,1-e/dur);
+      ctx.save();ctx.globalAlpha=p.life;ctx.translate(p.x,p.y);ctx.rotate(p.rot);
+      ctx.fillStyle=p.c;ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.62);ctx.restore();});
+    if(e<dur)requestAnimationFrame(frame);
+    else{ctx.clearRect(0,0,cv.width,cv.height);cv.style.display="none";}})(t0);
+}
 function zoomToPoints(pts,fill=0.8,maxK=9){
   pts=(pts||[]).filter(Boolean);if(!pts.length)return;
   if(!showLabels){showLabels=true;bL.classList.add("on");applyToggles();}
@@ -487,12 +667,13 @@ legs.forEach(leg=>{
   div.innerHTML=`<h2 title="Zoom to this region"><span class="dot" style="background:${c}"></span>${leg.t}<span class="lg">\u2248 ${Math.round(legMi/10)*10} mi</span></h2>`;
   div.querySelector("h2").addEventListener("click",()=>zoomToPoints(routePts.slice(leg.a-1,leg.b+1),.8));
   for(let i=leg.a;i<=leg.b;i++){const d=route[i],s=segs[i-1];
-    const row=document.createElement("div");row.className="row";row.dataset.stop=i;
-    row.title="Zoom to this stop";
-    row.innerHTML=`<div class="idx">${i}</div><div>`+
+    const row=document.createElement("div");row.className="row";row.dataset.stop=i;row.dataset.st=d.st;
+    row.title="Tap row to zoom \u00b7 circle to check off";
+    row.innerHTML=`<button class="chk" title="Mark visited">${i}</button><div>`+
       `<div class="city">${d.n} <span>${d.st}</span></div>`+
       `<div class="drive"><span class="arr">\u2197</span>\u2248 ${Math.round(s.miles/5)*5} mi \u00b7 ${hm(s.hours)}</div>`+
       `<div class="note">${s.note}</div></div>`;
+    row.querySelector(".chk").addEventListener("click",e=>{e.stopPropagation();toggleVisited(d.st,e);});
     row.addEventListener("mouseenter",()=>hot(i));
     row.addEventListener("mouseleave",clearHot);
     row.addEventListener("click",()=>{const lo=Math.max(0,i-2),hi=Math.min(route.length-1,i+1);
@@ -531,6 +712,146 @@ bD.onclick=()=>{showDone=!showDone;bD.classList.toggle("on",showDone);applyToggl
 bG.onclick=()=>{showGems=!showGems;bG.classList.toggle("on",showGems);applyToggles();};
 bR.onclick=clearHot;
 
+// ── Play the drive ──
+const bPlay=document.getElementById("bPlay"),stage=document.getElementById("stage");
+const PLAY_LABEL="▶  Play the drive";
+let playing=false,playPaused=false,playRAF=null,playStart=0,pausedAt=0,playDur=21000;
+let playSegCum=[0],playTotalLen=0;
+function playLabelFor(p){
+  const d=p*playTotalLen;let k=0;while(k<playSegCum.length-1&&playSegCum[k+1]<d)k++;
+  const a=route[k],b=route[k+1]||route[route.length-1];
+  return {from:a&&a.home?"NYC":(a?a.n:""),to:b&&b.home?"NYC":(b?b.n:"")};
+}
+function startPlay(){
+  if(!playTotalLen||!statesFC)return;
+  if(typeof exitTour==="function")exitTour();
+  playing=true;playPaused=false;pausedAt=0;
+  bPlay.classList.add("active");bPlay.textContent="■  Stop";
+  hideTip();dropHint();
+  svg.on(".zoom",null);
+  svg.call(zoom.transform,d3.zoomIdentity);
+  gSeg.selectAll("path").classed("dim",true);
+  gStop.selectAll("g").style("opacity",.35);
+  gGem.style("opacity",.22);gDone.style("opacity",.45);gFly.style("opacity",.45);
+  const tl=trailPath.node().getTotalLength();
+  trailPath.style("display",null).attr("stroke-dasharray",tl).attr("stroke-dashoffset",tl);
+  carG.style("display",null);
+  stage.classList.add("show");
+  stage.innerHTML='<span class="car">🚗</span><div class="body">'+
+    '<div class="cap-title" id="stTitle">Starting in New York City…</div>'+
+    '<div class="cap-sub" id="stSub">Driving the loop · 0%</div></div>'+
+    '<div class="grp"><button class="sbtn" id="stPause">⏸ Pause</button>'+
+    '<button class="sbtn x" id="stStop" title="Stop">✕</button></div>';
+  document.getElementById("stPause").onclick=togglePlayPause;
+  document.getElementById("stStop").onclick=stopPlay;
+  playStart=performance.now();
+  cancelAnimationFrame(playRAF);playRAF=requestAnimationFrame(playFrame);
+}
+function playFrame(t){
+  if(!playing)return;
+  if(playPaused){playRAF=requestAnimationFrame(playFrame);return;}
+  let p=(t-playStart)/playDur;if(p>1)p=1;
+  const tl=trailPath.node().getTotalLength();
+  trailPath.attr("stroke-dashoffset",tl*(1-p));
+  const pt=trailPath.node().getPointAtLength(p*tl);
+  carG.attr("transform",`translate(${pt.x},${pt.y})`);
+  const L=playLabelFor(p),st=document.getElementById("stTitle"),ss=document.getElementById("stSub");
+  if(st)st.textContent=`${L.from} → ${L.to}`;
+  if(ss)ss.textContent=`Driving the loop · ${Math.round(p*100)}%`;
+  if(p>=1){endPlay();return;}
+  playRAF=requestAnimationFrame(playFrame);
+}
+function togglePlayPause(){
+  playPaused=!playPaused;const b=document.getElementById("stPause");
+  if(playPaused){pausedAt=performance.now()-playStart;if(b)b.textContent="▶ Resume";}
+  else{playStart=performance.now()-pausedAt;if(b)b.textContent="⏸ Pause";}
+}
+function endPlay(){flashToast("🏁 "+(Math.round(totMiles/50)*50).toLocaleString()+" mi · the whole loop!");setTimeout(stopPlay,1500);}
+function stopPlay(){
+  playing=false;cancelAnimationFrame(playRAF);
+  bPlay.classList.remove("active");bPlay.textContent=PLAY_LABEL;
+  stage.classList.remove("show");stage.innerHTML="";
+  trailPath.style("display","none");carG.style("display","none");
+  gSeg.selectAll("path").classed("dim",false);
+  gStop.selectAll("g").style("opacity",null);
+  gGem.style("opacity",null);gDone.style("opacity",null);gFly.style("opacity",null);
+  svg.call(zoom);
+}
+bPlay.onclick=()=>{playing?stopPlay():startPlay();};
+
+// ── Guided region tour ──
+const bTour=document.getElementById("bTour"),TOUR_LABEL="🧭  Guided tour";
+let touring=false,tourIdx=0;
+const gemLeg=gems.map(g=>{let best=1e9,bi=1;
+  for(let i=1;i<route.length-1;i++){const dd=(route[i].lat-g.lat)**2+(route[i].lon-g.lon)**2;if(dd<best){best=dd;bi=i;}}
+  let li=legs.findIndex(L=>bi>=L.a&&bi<=L.b);return li<0?0:li;});
+function gemsForLeg(li){return gems.filter((g,i)=>gemLeg[i]===li);}
+function highlightLeg(leg){
+  gSeg.selectAll("path").classed("dim",true).classed("hot",false);
+  for(let i=leg.a-1;i<=leg.b-1;i++)gSeg.select(`[data-seg="${i}"]`).classed("dim",false).classed("hot",true).raise();
+}
+function renderTour(){
+  const leg=legs[tourIdx];
+  zoomToPoints(routePts.slice(leg.a-1,leg.b+1),.78);
+  highlightLeg(leg);
+  const cities=[];for(let i=leg.a;i<=leg.b;i++)cities.push(route[i].n);
+  const legMi=d3.sum(d3.range(leg.a,leg.b+1),i=>segs[i-1].miles);
+  const gl=gemsForLeg(tourIdx).slice(0,2).map(g=>g.n);
+  let sub=cities.join(" · ")+"  ·  ≈ "+(Math.round(legMi/10)*10).toLocaleString()+" mi";
+  if(gl.length)sub+="   ★ "+gl.join(" · ");
+  stage.classList.add("show");
+  stage.innerHTML=
+    '<button class="sbtn" id="tPrev" title="Previous region">◀</button>'+
+    '<div class="body"><div class="cap-title">'+leg.t+' <span class="rcount">Region '+(tourIdx+1)+' / '+legs.length+'</span></div>'+
+    '<div class="cap-sub">'+sub+'</div></div>'+
+    '<div class="grp"><button class="sbtn" id="tNext">'+(tourIdx<legs.length-1?"Next ▶":"Finish ✓")+'</button>'+
+    '<button class="sbtn x" id="tExit" title="Exit tour">✕</button></div>';
+  document.getElementById("tPrev").onclick=tourPrev;
+  document.getElementById("tPrev").disabled=tourIdx===0;
+  document.getElementById("tNext").onclick=tourNext;
+  document.getElementById("tExit").onclick=exitTour;
+}
+function startTour(){
+  if(playing)stopPlay();
+  touring=true;tourIdx=0;hideTip();dropHint();
+  bTour.classList.add("active");bTour.textContent="✕  Exit tour";
+  renderTour();
+}
+function tourNext(){tourIdx<legs.length-1?(tourIdx++,renderTour()):exitTour();}
+function tourPrev(){if(tourIdx>0){tourIdx--;renderTour();}}
+function exitTour(){
+  const was=touring;touring=false;
+  bTour.classList.remove("active");bTour.textContent=TOUR_LABEL;
+  stage.classList.remove("show");stage.innerHTML="";
+  gSeg.selectAll("path").classed("dim",false).classed("hot",false);clearHot();
+  if(was)svg.transition().duration(450).call(zoom.transform,d3.zoomIdentity);
+}
+bTour.onclick=()=>{touring?exitTour():startTour();};
+
+// ── Share + deep links ──
+const bShare=document.getElementById("bShare");
+function buildShareURL(){
+  const base=location.href.split("#")[0];
+  const v=[...visited].join("-");
+  return base+(v?"#v="+v:"");
+}
+bShare.onclick=async()=>{
+  const url=buildShareURL();
+  try{await navigator.clipboard.writeText(url);flashToast("🔗 Link copied — it shares your progress!");}
+  catch(e){history.replaceState(null,"","#v="+[...visited].join("-"));
+    flashToast("🔗 Progress saved to the URL — copy it from the address bar");}
+};
+function parseVisitedHash(){
+  const m=/[#&]v=([A-Za-z,\-]*)/.exec(location.hash);
+  if(m){const arr=(m[1]||"").split(/[-,]/).filter(a=>STATE_NAME[a]);visited=new Set(arr);saveVisited();}
+}
+function applyDeepLink(){
+  const lm=/[#&]leg=(\d+)/.exec(location.hash);
+  if(lm){const li=Math.max(0,Math.min(legs.length-1,+lm[1]-1));
+    zoomToPoints(routePts.slice(legs[li].a-1,legs[li].b+1),.78);}
+  if(/[#&]play=1/.test(location.hash))setTimeout(startPlay,500);
+}
+
 // load real US map, then draw
 const overlay=document.getElementById("overlay");
 function fail(){
@@ -543,7 +864,9 @@ else{
   d3.json(US_ATLAS).then(us=>{
     statesFC=topojson.feature(us,us.objects.states);
     overlay.style.display="none";
+    parseVisitedHash();
     draw();
+    applyDeepLink();
     setTimeout(dropHint,5000);
   }).catch(fail);
 }
