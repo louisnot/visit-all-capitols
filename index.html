@@ -60,7 +60,7 @@
     background:#0b1018d9;border:1px solid #33414f;border-radius:999px;padding:6px 14px;
     backdrop-filter:blur(3px);transition:opacity .6s ease;white-space:nowrap}
   .zoomhint.hide{opacity:0}
-  .state{fill:var(--land);stroke:var(--landstroke);stroke-width:.6;transition:fill .15s;vector-effect:non-scaling-stroke}
+  .state{fill:var(--land);stroke:var(--landstroke);stroke-width:.6;transition:fill .15s;vector-effect:non-scaling-stroke;cursor:pointer}
   .state.visited{fill:var(--green);stroke:var(--greenline);stroke-width:1}
   .state:hover{fill:#222d3b}
   .state.visited:hover{fill:#26895a}
@@ -178,6 +178,39 @@
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   #confetti{position:absolute;inset:0;z-index:8;pointer-events:none;display:none}
 
+  /* ── state guide panel ── */
+  .panel{position:relative}
+  #stateView{display:none;opacity:0;transform:translateX(14px);transition:opacity .25s,transform .25s}
+  #stateView.show{opacity:1;transform:none}
+  .sv-back{position:sticky;top:0;z-index:3;width:100%;text-align:left;font:inherit;font-family:Oswald;font-weight:600;
+    letter-spacing:.05em;font-size:12px;text-transform:uppercase;color:var(--muted);cursor:pointer;
+    background:#0f151ef5;backdrop-filter:blur(4px);border:none;border-bottom:1px solid var(--line);padding:12px 16px}
+  .sv-back:hover{color:var(--ink)}
+  .sv-hero{position:relative;min-height:148px;background:#1b2431 center/cover no-repeat;display:flex;align-items:flex-end}
+  .sv-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#0d111722 0%,#0d1117f5 100%)}
+  .sv-hero-tx{position:relative;padding:14px 16px;z-index:1}
+  .sv-state{font-family:Oswald;font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:25px;line-height:1.02}
+  .sv-cap{font-family:Oswald;color:var(--sig);font-size:13px;letter-spacing:.03em;margin-top:5px}
+  .sv-cap em{color:var(--muted);font-style:normal}
+  .sv-about{font-size:13px;line-height:1.5;color:var(--muted);padding:13px 16px 2px;margin:0}
+  .sv-sec{padding:6px 16px}
+  .sv-sec h3{font-family:Oswald;font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:12px;
+    color:var(--ink);margin:12px 0 6px;display:flex;align-items:center;gap:7px}
+  .sv-sec h3 .ic{font-size:14px;line-height:1}
+  .sv-item{padding:7px 0;border-top:1px solid #1a212c;font-size:12.5px;line-height:1.42}
+  .sv-sec h3 + .sv-item{border-top:none}
+  .sv-item b{font-family:Oswald;font-weight:600;color:var(--ink);letter-spacing:.01em}
+  .sv-item span{color:var(--muted)}
+  .sv-capcard{display:flex;gap:12px;padding:6px 16px 4px;align-items:flex-start}
+  .sv-capcard img{width:88px;height:66px;object-fit:cover;border-radius:9px;flex:none;background:#1b2431}
+  .sv-capcard .t{font-family:Oswald;font-weight:600;font-size:14.5px}
+  .sv-capcard .t em{color:var(--sig);font-style:normal;font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;margin-left:6px}
+  .sv-capcard .d{font-size:12px;color:var(--muted);line-height:1.42;margin-top:3px}
+  .sv-load{padding:34px 16px;text-align:center;color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:13px;align-items:center}
+  .sv-src{padding:16px 16px 28px;font-size:11px;color:var(--faint);line-height:1.4}
+  .sv-src a{color:var(--sig);text-decoration:none}
+  .sv-empty{color:var(--faint);font-size:12px;padding:5px 0}
+
   @media(max-width:860px){
     .main{flex-direction:column}
     .mapcol{flex:none;height:50vh}
@@ -227,7 +260,7 @@
       <span class="progress-txt"><b id="pCount">4</b> / 50 visited</span>
       <div class="progress"><div class="bar" id="pBar"></div></div>
       <span class="progress-txt" id="pPct">8%</span>
-      <span class="tiphint">Tap a capital to check it off &middot; saved on this device</span>
+      <span class="tiphint">Click a state for its guide &middot; tap a capital to check it off</span>
     </div>
   </header>
   <div class="main">
@@ -505,7 +538,8 @@ function draw(){
   gLand.selectAll("path").data(statesFC.features).join("path")
     .attr("class","state")
     .attr("d",path)
-    .each(function(d){ this.querySelector("title")||d3.select(this).append("title").text(d.properties.name); });
+    .on("click",(e,d)=>{if(playing)return;const ab=NAME_ABBR[d.properties.name];if(ab){e.stopPropagation();openState(ab);}})
+    .each(function(d){ this.querySelector("title")||d3.select(this).append("title").text(d.properties.name+" — click for its guide"); });
 
   const P=route.map(d=>proj([d.lon,d.lat]));
   routePts=P;
@@ -660,6 +694,8 @@ function zoomToPoints(pts,fill=0.8,maxK=9){
 
 // panel
 const panel=document.getElementById("panel");
+const itin=document.createElement("div");itin.id="itin";panel.appendChild(itin);
+const stateView=document.createElement("div");stateView.id="stateView";panel.appendChild(stateView);
 legs.forEach(leg=>{
   const mid=Math.round((leg.a+leg.b)/2),c=color(mid/(route.length-2));
   const legMi=d3.sum(d3.range(leg.a,leg.b+1),i=>segs[i-1].miles);
@@ -679,14 +715,14 @@ legs.forEach(leg=>{
     row.addEventListener("click",()=>{const lo=Math.max(0,i-2),hi=Math.min(route.length-1,i+1);
       hot(i);zoomToPoints(routePts.slice(lo,hi+1),.7,6);});
     div.appendChild(row);}
-  panel.appendChild(div);
+  itin.appendChild(div);
 });
 const fl=document.createElement("div");fl.className="flights";
 fl.innerHTML=`<h2>+ Two flights</h2>`+
  `<div class="flight"><span class="plane">\u2708</span><div><b>Juneau, AK</b> &mdash; no road reaches it from the lower 48; fly in (or take the ferry).</div></div>`+
  `<div class="flight"><span class="plane">\u2708</span><div><b>Honolulu, HI</b> &mdash; fly from the West Coast, ideally bolted onto the Pacific Northwest leg.</div></div>`+
  `<div class="flight" style="border-top:none;color:var(--faint)"><span style="color:var(--greendot)">\u2713</span><div>Already done (green): Boston MA, Albany NY, Montpelier VT, Nashville TN.</div></div>`;
-panel.appendChild(fl);
+itin.appendChild(fl);
 
 // zoom controls
 const zc=document.getElementById("zoomctl");
@@ -850,7 +886,141 @@ function applyDeepLink(){
   if(lm){const li=Math.max(0,Math.min(legs.length-1,+lm[1]-1));
     zoomToPoints(routePts.slice(legs[li].a-1,legs[li].b+1),.78);}
   if(/[#&]play=1/.test(location.hash))setTimeout(startPlay,500);
+  const sm=/[#&]state=([A-Z]{2})/.exec(location.hash);
+  if(sm&&STATE_NAME[sm[1]])setTimeout(()=>openState(sm[1]),300);
 }
+
+// ── Click-a-state guide (live from Wikipedia + Wikivoyage) ──
+const NAME_ABBR={};Object.keys(STATE_NAME).forEach(a=>NAME_ABBR[STATE_NAME[a]]=a);
+const CAPITAL={};
+route.forEach(d=>{if(d.st&&!d.home&&STATE_NAME[d.st]&&!CAPITAL[d.st])CAPITAL[d.st]={n:d.n};});
+[...doneCaps,...flyCaps].forEach(d=>{CAPITAL[d.st]={n:d.n};});
+const WP_TITLE={GA:"Georgia (U.S. state)",NY:"New York (state)",WA:"Washington (state)"};
+const WV_TITLE={GA:"Georgia (U.S. state)",NY:"New York (state)",WA:"Washington (state)"};
+const gemSt=gems.map(g=>{let best=1e9,st=null;
+  for(const s of [...route.slice(1,route.length-1),...doneCaps,...flyCaps]){
+    const dd=(s.lat-g.lat)**2+(s.lon-g.lon)**2;if(dd<best){best=dd;st=s.st;}}
+  return st;});
+function cleanWiki(s){return (s||"")
+  .replace(/<ref[^>]*>[\s\S]*?<\/ref>/gi,"").replace(/<ref[^>]*\/>/gi,"")
+  .replace(/\{\{[^{}]*\}\}/g,"")
+  .replace(/\[\[(?:[^\]|]*\|)?([^\]]+)\]\]/g,"$1")
+  .replace(/'''?/g,"")
+  .replace(/\[https?:\/\/\S+\s+([^\]]+)\]/g,"$1").replace(/\[https?:\/\/\S+\]/g,"")
+  .replace(/<[^>]+>/g,"").replace(/&nbsp;/g," ").replace(/\s+/g," ").trim();}
+function sectionText(wt,name){
+  const e=name.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+  const re=new RegExp("\\n==\\s*"+e+"\\s*==\\s*\\n([\\s\\S]*?)(?=\\n==[^=])","i");
+  const m=re.exec("\n"+(wt||"")+"\n==z\n");return m?m[1]:"";}
+function listingsFrom(txt,max){
+  const items=[],seen=new Set();
+  (txt||"").split("\n").forEach(line=>{
+    const l=line.trim();if(!l.startsWith("*"))return;
+    let name=null,m;
+    if(m=/name=\s*\[\[([^\]|]+?)(?:\|([^\]]+))?\]\]/.exec(l))name=m[2]||m[1];
+    else if(m=/name=\s*([^|}\n]+)/.exec(l))name=m[1];
+    else if(m=/\[\[([^\]|]+?)(?:\|([^\]]+))?\]\]/.exec(l))name=m[2]||m[1];
+    else if(m=/'''([^']+)'''/.exec(l))name=m[1];
+    if(!name)return;name=cleanWiki(name);if(name.length<2)return;
+    if(/^(see|do|eat|drink|buy|sleep|go|understand)$/i.test(name))return;
+    let desc="";const dm=/[–—](.+)$/.exec(l);if(dm)desc=cleanWiki(dm[1]);
+    const k=name.toLowerCase();if(seen.has(k))return;seen.add(k);
+    items.push({name,desc:desc.slice(0,170)});
+  });
+  return items.slice(0,max||8);}
+function firstProse(sec){
+  const buf=[];
+  for(const ln of (sec||"").split("\n")){
+    const t=ln.trim();
+    if(!t){if(buf.length)break;else continue;}
+    if(t.startsWith("{{")||/^\[\[(File|Image):/i.test(t)||t.startsWith("*")||t.startsWith("==")||t.startsWith("|")||t.startsWith("!")||t.startsWith(":")){if(buf.length)break;else continue;}
+    buf.push(t);
+  }
+  return cleanWiki(buf.join(" "));}
+function trimSentences(s,n){if(!s)return "";return s.split(/(?<=[.!?])\s+/).slice(0,n).join(" ");}
+function foodFrom(wt){
+  const items=[],seen=new Set();
+  ["Eat","Drink"].forEach(sec=>{(sectionText(wt,sec)||"").split("\n").forEach(line=>{
+    const m=/^\**\s*'''([^']{2,55})'''\s*[:.\-–—]?\s*(.*)$/.exec(line.trim());
+    if(!m)return;let name=cleanWiki(m[1]).replace(/[:\-]$/,"").trim();
+    const desc=cleanWiki(m[2]||"").slice(0,150),k=name.toLowerCase();
+    if(name.length<2||seen.has(k))return;
+    if(/^(see|do|eat|drink|buy|sleep|stay safe|get in|get around|by car|by plane)$/i.test(name))return;
+    seen.add(k);items.push({name,desc});});});
+  let text="";
+  if(items.length<2){
+    text=trimSentences(firstProse(sectionText(wt,"Eat")),2);
+    const dr=trimSentences(firstProse(sectionText(wt,"Drink")),1);
+    if(dr&&(text.length+dr.length)<360)text=(text?text+" ":"")+dr;
+  }
+  return {items:items.slice(0,9),text:text.slice(0,440)};}
+function dedupe(arr){const s=new Set(),r=[];for(const it of arr){const k=it.name.toLowerCase();if(s.has(k))continue;s.add(k);r.push(it);}return r;}
+const stateCache={};
+function fetchStateData(abbr){
+  if(stateCache[abbr])return Promise.resolve(stateCache[abbr]);
+  const name=STATE_NAME[abbr],cap=CAPITAL[abbr];
+  const wpT=WP_TITLE[abbr]||name,wvT=WV_TITLE[abbr]||name,capT=cap?cap.n+", "+name:null;
+  const data={name,abbr,cap:cap?cap.n:null,places:[],todo:[],food:[],gems:[]};
+  const sum=t=>"https://en.wikipedia.org/api/rest_v1/page/summary/"+encodeURIComponent(t);
+  const jobs=[
+    fetch(sum(wpT)).then(r=>r.ok?r.json():null).then(s=>{if(s){data.about=s.extract;data.img=s.thumbnail&&s.thumbnail.source;data.wpUrl=s.content_urls&&s.content_urls.desktop&&s.content_urls.desktop.page;data.nick=s.description;}}).catch(()=>{}),
+    fetch("https://en.wikivoyage.org/w/api.php?action=parse&page="+encodeURIComponent(wvT)+"&prop=wikitext&format=json&origin=*&redirects=1").then(r=>r.ok?r.json():null).then(j=>{
+      const wt=j&&j.parse&&j.parse.wikitext&&j.parse.wikitext["*"];if(!wt)return;
+      data.places=dedupe([...listingsFrom(sectionText(wt,"Other destinations"),7),...listingsFrom(sectionText(wt,"See"),5),...listingsFrom(sectionText(wt,"Cities"),5)]).slice(0,9);
+      data.todo=listingsFrom(sectionText(wt,"Do"),6);
+      data.food=foodFrom(wt);
+      data.wvUrl="https://en.wikivoyage.org/wiki/"+encodeURIComponent(wvT);
+    }).catch(()=>{})
+  ];
+  if(capT)jobs.push(fetch(sum(capT)).then(r=>r.ok?r.json():null).then(s=>{if(s){data.capAbout=s.extract;data.capImg=s.thumbnail&&s.thumbnail.source;}}).catch(()=>{}));
+  return Promise.all(jobs).then(()=>{
+    data.gems=gems.filter((g,i)=>gemSt[i]===abbr).map(g=>({name:g.n,desc:g.note}));
+    stateCache[abbr]=data;return data;});
+}
+function svEsc(s){return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function svList(items){if(!items||!items.length)return '<div class="sv-empty">Nothing listed for this one yet.</div>';
+  return items.map(it=>'<div class="sv-item"><b>'+svEsc(it.name)+"</b>"+(it.desc?' <span>— '+svEsc(it.desc)+"</span>":"")+"</div>").join("");}
+let curState=null;
+function renderStateLoading(abbr){
+  const name=STATE_NAME[abbr],cap=CAPITAL[abbr];
+  stateView.innerHTML='<button class="sv-back">← Back to route</button>'+
+    '<div class="sv-hero"><div class="sv-hero-tx"><div class="sv-state">'+name+"</div>"+
+    (cap?'<div class="sv-cap">Capital · '+svEsc(cap.n)+"</div>":"")+"</div></div>"+
+    '<div class="sv-load"><div class="spin"></div><div>Fetching '+name+'’s guide from Wikipedia &amp; Wikivoyage…</div></div>';
+  stateView.querySelector(".sv-back").onclick=closeState;
+}
+function renderState(d){
+  let h='<button class="sv-back">← Back to route</button>';
+  h+='<div class="sv-hero"'+(d.img?' style="background-image:url('+svEsc(d.img)+')"':"")+'><div class="sv-hero-tx">'+
+    '<div class="sv-state">'+d.name+"</div>"+
+    (d.cap?'<div class="sv-cap">Capital · '+svEsc(d.cap)+"</div>":"")+"</div></div>";
+  if(d.about)h+='<p class="sv-about">'+svEsc(d.about)+"</p>";
+  if(d.capAbout||d.capImg)h+='<div class="sv-capcard">'+(d.capImg?'<img src="'+svEsc(d.capImg)+'" alt="">':"")+
+    '<div><div class="t">'+svEsc(d.cap)+' <em>Capital</em></div><div class="d">'+svEsc(d.capAbout||"")+"</div></div></div>";
+  h+='<div class="sv-sec"><h3><span class="ic">📍</span>Famous places &amp; sights</h3>'+svList(d.places)+"</div>";
+  if(d.todo&&d.todo.length)h+='<div class="sv-sec"><h3><span class="ic">🎟️</span>Things to do</h3>'+svList(d.todo)+"</div>";
+  const food=d.food||{};
+  h+='<div class="sv-sec"><h3><span class="ic">🍽️</span>Eat &amp; drink — local specialties</h3>'+
+    (food.items&&food.items.length?svList(food.items):(food.text?'<div class="sv-item" style="border:none"><span>'+svEsc(food.text)+"</span></div>":'<div class="sv-empty">Nothing listed for this one yet.</div>'))+"</div>";
+  if(d.gems&&d.gems.length)h+='<div class="sv-sec"><h3><span class="ic">★</span>Hidden gems on your route</h3>'+svList(d.gems)+"</div>";
+  h+='<div class="sv-src">Live from '+(d.wpUrl?'<a href="'+svEsc(d.wpUrl)+'" target="_blank" rel="noopener">Wikipedia</a>':"Wikipedia")+
+    " &amp; "+(d.wvUrl?'<a href="'+svEsc(d.wvUrl)+'" target="_blank" rel="noopener">Wikivoyage</a>':"Wikivoyage")+". Click the map to explore another state.</div>";
+  stateView.innerHTML=h;
+  stateView.querySelector(".sv-back").onclick=closeState;
+}
+function openState(abbr){
+  if(!abbr||!STATE_NAME[abbr])return;
+  curState=abbr;hideTip();
+  itin.style.display="none";stateView.style.display="block";panel.scrollTop=0;
+  renderStateLoading(abbr);
+  requestAnimationFrame(()=>stateView.classList.add("show"));
+  fetchStateData(abbr).then(d=>{if(curState===abbr)renderState(d);}).catch(()=>{});
+}
+function closeState(){
+  curState=null;stateView.classList.remove("show");
+  setTimeout(()=>{if(!curState){stateView.style.display="none";itin.style.display="";}},250);
+}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&curState)closeState();});
 
 // load real US map, then draw
 const overlay=document.getElementById("overlay");
