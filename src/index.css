@@ -299,3 +299,41 @@
     .toggles button{font-size:11px;padding:4px 10px}
     .zoomctl button{width:42px;height:42px}
   }
+
+/* ── Trip mini-map (states you'll visit) ── */
+.trip-mapwrap{max-width:860px;margin:16px auto 0;padding:0 20px}
+.trip-maphdr{font-family:Oswald;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px}
+.trip-maphdr b{color:var(--ink);font-weight:600}
+.trip-maphdr span{color:var(--greendot)}
+#tripMiniMap{width:100%;height:280px;display:block;background:radial-gradient(120% 120% at 50% 0%,#141d29,#0c121b);
+  border:1px solid var(--line);border-radius:14px}
+.mm-state{fill:#1a222e;stroke:#2c3847;stroke-width:1;vector-effect:non-scaling-stroke;transition:fill .3s}
+.mm-state.on{fill:var(--green);stroke:var(--greenline);stroke-width:1.4}
+.mm-route{fill:none;stroke:#34d399;stroke-width:2.4;stroke-dasharray:2 6;stroke-linecap:round;vector-effect:non-scaling-stroke;opacity:.85}
+.mm-dot{fill:var(--sig);stroke:#0d1117;stroke-width:1.5}
+.mm-dot.home{fill:var(--shield)}
+.mm-lab{font-family:Oswald;font-weight:600;font-size:12px;fill:#eef2f6;letter-spacing:.01em;
+  paint-order:stroke;stroke:#0d1117cc;stroke-width:3px}
+@media(max-width:560px){ #tripMiniMap{height:220px} .trip-mapwrap{padding:0 14px} }
+
+/* ── map search ── */
+.mapsearch{position:relative}
+.mapsearch input{font:inherit;font-size:12.5px;width:210px;max-width:52vw;background:#0b131d;color:var(--ink);
+  border:1px solid var(--line);border-radius:999px;padding:7px 13px;outline:none;transition:border-color .15s,box-shadow .15s}
+.mapsearch input:focus{border-color:var(--sig);box-shadow:0 0 0 3px #f4b74022}
+.mapsearch input::placeholder{color:var(--faint)}
+.searchres{position:absolute;top:calc(100% + 6px);left:0;z-index:20;min-width:220px;max-width:min(320px,84vw);
+  background:#0b1119f7;border:1px solid #33414f;border-radius:11px;overflow:hidden;box-shadow:0 12px 30px #000a;backdrop-filter:blur(4px);display:none}
+.searchres.show{display:block}
+.sres{display:flex;align-items:center;gap:9px;padding:9px 12px;font-size:13px;cursor:pointer;border-top:1px solid #1a212c;color:var(--ink)}
+.sres:first-child{border-top:none}
+.sres:hover,.sres.on{background:var(--surface2)}
+.sres .sr-ic{color:var(--sig);font-size:11px;width:12px;text-align:center;flex:none}
+.sres .sr-sub{margin-left:auto;font-family:Oswald;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);white-space:nowrap}
+
+/* ── visual polish ── */
+.state:hover{fill:#243244}
+.state.visited:hover{fill:#2a9c66}
+.seg.hot{filter:drop-shadow(0 0 5px rgba(170,225,255,.55))}
+.stop.hot circle,.done.vis circle{filter:drop-shadow(0 0 4px rgba(123,242,171,.6))}
+.mapcol{background:radial-gradient(130% 100% at 50% -10%,#16202e 0%,#0d1117 62%)}

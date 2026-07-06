@@ -224,13 +224,15 @@ const STAR=d3.symbol().type(d3.symbolStar).size(46)();
 const zoom=d3.zoom().scaleExtent([1,9]).on("zoom",zoomed);
 svg.call(zoom);
 svg.on("click.tip",hideTip);  // tap empty map to dismiss a sight tooltip
+let curK=1;
 function zoomed(ev){
-  const t=ev.transform;gZoom.attr("transform",t);
+  const t=ev.transform;gZoom.attr("transform",t);curK=t.k;
   const inv=1/t.k;  // keep point markers + labels at constant screen size
   gStop.selectAll("g").attr("transform",function(){return `translate(${this.dataset.x},${this.dataset.y}) scale(${inv})`;});
   gDone.selectAll("g").attr("transform",function(){return `translate(${this.dataset.x},${this.dataset.y}) scale(${inv})`;});
   gGem.selectAll("g").attr("transform",function(){return `translate(${this.dataset.x},${this.dataset.y}) scale(${inv})`;});
   gFly.selectAll("g").attr("transform",function(){return `translate(${this.dataset.x},${this.dataset.y}) scale(${inv})`;});
+  refreshLabels();
 }
 segs.forEach(s=>{
   defs.append("marker").attr("id","ah"+s.i).attr("viewBox","0 0 10 10")
@@ -255,8 +257,9 @@ function draw(){
   gLand.selectAll("path").data(statesFC.features).join("path")
     .attr("class","state")
     .attr("d",path)
-    .on("click",(e,d)=>{if(playing)return;const ab=NAME_ABBR[d.properties.name];if(ab){e.stopPropagation();openState(ab);}})
-    .each(function(d){ this.querySelector("title")||d3.select(this).append("title").text(d.properties.name+" — click for its guide"); });
+    .on("mousemove",(e,d)=>{if(!playing)showStateTip(e,d);})
+    .on("mouseleave",hideTip)
+    .on("click",(e,d)=>{if(playing)return;const ab=NAME_ABBR[d.properties.name];if(ab){e.stopPropagation();hideTip();openState(ab);}});
 
   const P=route.map(d=>proj([d.lon,d.lat]));
   routePts=P;
@@ -280,13 +283,13 @@ function draw(){
   playTotalLen=_c;
   gDone.selectAll("g").remove();
   doneCaps.forEach(d=>{const p=proj([d.lon,d.lat]);if(!p)return;
-    const g=gDone.append("g").attr("class","done cap").attr("data-st",d.st).attr("data-name",d.n).attr("data-x",p[0]).attr("data-y",p[1]).attr("transform",`translate(${p[0]},${p[1]})`);
+    const g=gDone.append("g").attr("class","done cap"+(CROWD.has(d.n)?" crowd":"")).attr("data-st",d.st).attr("data-name",d.n).attr("data-x",p[0]).attr("data-y",p[1]).attr("transform",`translate(${p[0]},${p[1]})`);
     g.append("circle").attr("r",4);
     g.append("text").attr("x",7).attr("y",3).text(d.n);
     g.on("click",e=>{e.stopPropagation();toggleVisited(d.st,e);});});
   gStop.selectAll("g").remove();
   route.forEach((d,i)=>{const p=P[i];if(!p)return;
-    const g=gStop.append("g").attr("class","stop"+(d.home?" home":" cap")).attr("data-x",p[0]).attr("data-y",p[1]).attr("transform",`translate(${p[0]},${p[1]})`).attr("data-stop",i);
+    const g=gStop.append("g").attr("class","stop"+(d.home?" home":" cap")+(CROWD.has(d.n)?" crowd":"")).attr("data-x",p[0]).attr("data-y",p[1]).attr("transform",`translate(${p[0]},${p[1]})`).attr("data-stop",i);
     if(!d.home){g.attr("data-st",d.st).attr("data-name",d.n);}
     g.append("circle").attr("r",d.home?5:3.6).attr("fill",d.home?null:color(i/(route.length-2)));
     if(!d.home)g.append("text").attr("x",6).attr("y",3).text(d.n);
@@ -334,6 +337,12 @@ function showTip(e,s){
   tip.innerHTML=`<div class="route">${s.a.home?"NYC":s.a.n} \u2192 ${s.b.home?"NYC":s.b.n}</div>`+
     `<div class="meta">\u2248 ${Math.round(s.miles/5)*5} mi \u00b7 ${hm(s.hours)} driving</div>`+
     `<div class="note">${s.note}</div>`;
+  placeTip(e);}
+function showStateTip(e,d){
+  const name=d.properties.name,ab=NAME_ABBR[name],cap=ab&&CAPITAL[ab]?CAPITAL[ab].n:null,vis=ab&&visited.has(ab);
+  tip.innerHTML=`<div class="route">${name}${vis?" ✓":""}</div>`+
+    (cap?`<div class="meta">Capital · ${cap}${vis?" · visited":""}</div>`:"")+
+    `<div class="note">Click for its guide — sights, food &amp; hidden gems.</div>`;
   placeTip(e);}
 function hideTip(){tip.classList.remove("show");}
 function hot(stopIdx){clearHot();const segIdx=stopIdx-1;
@@ -457,13 +466,58 @@ zoom.on("start.hint",dropHint);
 let showLabels=window.matchMedia("(min-width:700px)").matches,showDone=true,showGems=true;
 const bL=document.getElementById("bLabels"),bD=document.getElementById("bDone"),bG=document.getElementById("bGems"),bR=document.getElementById("bReset");
 bL.classList.toggle("on",showLabels);
-function applyToggles(){gStop.selectAll("text").style("display",showLabels?null:"none");
+const CROWD=new Set(["Hartford","Providence","Concord","Trenton","Dover","Annapolis","Boston","Albany","Montpelier"]);
+function refreshLabels(){
+  const zin=curK>2.2;
+  gStop.selectAll("g").each(function(){
+    const t=this.querySelector("text");if(!t)return;
+    const crowd=this.classList.contains("crowd");
+    t.style.display=(showLabels&&(!crowd||zin))?"":"none";
+  });
+  gDone.selectAll("g").each(function(){
+    const t=this.querySelector("text");if(!t)return;
+    t.style.display=(!this.classList.contains("crowd")||zin)?"":"none";
+  });
+}
+function applyToggles(){refreshLabels();
   gDone.style("display",showDone?null:"none");
   gGem.style("display",showGems?null:"none");}
 bL.onclick=()=>{showLabels=!showLabels;bL.classList.toggle("on",showLabels);applyToggles();};
 bD.onclick=()=>{showDone=!showDone;bD.classList.toggle("on",showDone);applyToggles();};
 bG.onclick=()=>{showGems=!showGems;bG.classList.toggle("on",showGems);applyToggles();};
 bR.onclick=clearHot;
+
+// ── search: jump to a capital or state ──
+const SEARCH=[];
+route.forEach(d=>{if(!d.home)SEARCH.push({t:"cap",name:d.n,st:d.st,lat:d.lat,lon:d.lon});});
+[...doneCaps,...flyCaps].forEach(d=>SEARCH.push({t:"cap",name:d.n,st:d.st,lat:d.lat,lon:d.lon}));
+Object.keys(STATE_NAME).forEach(ab=>SEARCH.push({t:"state",name:STATE_NAME[ab],st:ab}));
+const sInput=document.getElementById("capSearch"),sRes=document.getElementById("searchRes");
+let sMatches=[],sActive=-1;
+function sQuery(q){q=q.trim().toLowerCase();if(!q)return [];
+  return SEARCH.filter(x=>x.name.toLowerCase().includes(q)||x.st.toLowerCase()===q||(STATE_NAME[x.st]||"").toLowerCase().includes(q))
+    .sort((a,b)=>a.name.toLowerCase().indexOf(q)-b.name.toLowerCase().indexOf(q)).slice(0,8);}
+function sRender(){
+  if(!sMatches.length){sRes.classList.remove("show");sRes.innerHTML="";return;}
+  sRes.innerHTML=sMatches.map((x,i)=>`<div class="sres${i===sActive?" on":""}" data-i="${i}">`+
+    `<span class="sr-ic">${x.t==="cap"?"◉":"▦"}</span>${x.name}<span class="sr-sub">${x.t==="cap"?x.st+" · capital":"state"}</span></div>`).join("");
+  sRes.classList.add("show");
+  sRes.querySelectorAll(".sres").forEach(el=>el.onclick=()=>sGo(sMatches[+el.dataset.i]));
+}
+function sGo(x){if(!x)return;sInput.value="";sMatches=[];sActive=-1;sRender();sInput.blur();
+  if(x.t==="cap"){const pt=proj([x.lon,x.lat]);if(pt)zoomToPoints([pt],0.5,6);}
+  else openState(x.st);}
+if(sInput){
+  sInput.addEventListener("input",()=>{sMatches=sQuery(sInput.value);sActive=sMatches.length?0:-1;sRender();});
+  sInput.addEventListener("keydown",e=>{
+    if(e.key==="ArrowDown"){sActive=Math.min(sActive+1,sMatches.length-1);sRender();e.preventDefault();}
+    else if(e.key==="ArrowUp"){sActive=Math.max(sActive-1,0);sRender();e.preventDefault();}
+    else if(e.key==="Enter"){sGo(sMatches[sActive]||sMatches[0]);}
+    else if(e.key==="Escape"){sInput.value="";sMatches=[];sRender();sInput.blur();}
+  });
+  sInput.addEventListener("blur",()=>setTimeout(()=>sRes.classList.remove("show"),160));
+  sInput.addEventListener("focus",()=>{if(sMatches.length)sRes.classList.add("show");});
+}
 
 // ── Play the drive ──
 const bPlay=document.getElementById("bPlay"),stage=document.getElementById("stage");
