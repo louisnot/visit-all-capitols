@@ -1,0 +1,49 @@
+<header>
+    <h1>The <span class="num">50</span> Capitals Loop</h1>
+    <span class="sub">NYC &rarr; 44 lower-48 capitals &rarr; NYC &middot; 4 already done &middot; Juneau &amp; Honolulu by air</span>
+    <div class="totals">
+      <div>Drive<b id="tMiles">&mdash;</b></div>
+      <div>Wheel time<b id="tHours">&mdash;</b></div>
+      <div>Capitals left<b id="stopsLeft">46</b></div>
+    </div>
+    <div class="toggles">
+      <button id="bPlay" class="primary">&#9654;&nbsp; Play the drive</button>
+      <button id="bTour" class="primary">&#129517;&nbsp; Guided tour</button>
+      <button id="bShare">&#128279;&nbsp; Share</button>
+      <span class="tdiv"></span>
+      <button id="bLabels" class="on">Labels</button>
+      <button id="bDone" class="on">Visited capitals</button>
+      <button id="bGems" class="on">Sights &amp; gems</button>
+      <button id="bReset">Reset highlight</button>
+      <div class="key">
+        <i><span class="swatch g"></span>Visited</i>
+        <i><span class="swatch r"></span>Drive (direction)</i>
+        <i><span class="swatch c"></span>Connector</i>
+        <i><span class="gemstar">&#9733;</span>Worth a stop</i>
+        <i><span style="color:var(--sig)">&#9992;</span>Fly-in</i>
+      </div>
+    </div>
+    <div class="progress-wrap">
+      <span class="progress-txt"><b id="pCount">4</b> / 50 visited</span>
+      <div class="progress"><div class="bar" id="pBar"></div></div>
+      <span class="progress-txt" id="pPct">8%</span>
+      <span class="tiphint">Click a state for its guide &middot; tap a capital to check it off</span>
+    </div>
+  </header>
+  <div class="main">
+    <div class="mapcol">
+      <svg id="map"></svg>
+      <div class="zoomctl" id="zoomctl">
+        <button data-z="in" title="Zoom in" aria-label="Zoom in">+</button>
+        <button data-z="out" title="Zoom out" aria-label="Zoom out">&minus;</button>
+        <button data-z="reset" class="reset" title="Reset view" aria-label="Reset view">&#x2922;</button>
+      </div>
+      <div class="zoomhint" id="zoomhint">Scroll / pinch to zoom &middot; drag to pan</div>
+      <div class="tip" id="tip"></div>
+      <canvas id="confetti"></canvas>
+      <div class="toast" id="toast"></div>
+      <div class="stage" id="stage"></div>
+      <div class="overlay" id="overlay"><div class="spin"></div><div>Loading the map&hellip;</div></div>
+    </div>
+    <div class="panel" id="panel"></div>
+  </div>

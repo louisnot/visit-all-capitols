@@ -1,0 +1,770 @@
+import * as d3 from "d3";
+import * as topojson from "topojson-client";
+
+export function initMapApp(){
+const US_ATLAS="https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
+const STATE_NAME={AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",
+  CT:"Connecticut",DE:"Delaware",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",
+  IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",
+  MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",
+  NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",
+  OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",
+  TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming"};
+const TOTAL_CAPS=50, DEFAULT_VISITED=["MA","NY","VT","TN"];
+function loadVisited(){
+  try{const s=localStorage.getItem("caps-visited");if(s)return new Set(JSON.parse(s));}catch(e){}
+  return new Set(DEFAULT_VISITED);
+}
+let visited=loadVisited();
+function saveVisited(){try{localStorage.setItem("caps-visited",JSON.stringify([...visited]));}catch(e){}}
+
+const route=[
+  {n:"New York City",st:"start",lat:40.7128,lon:-74.0060,home:true},
+  {n:"Hartford",st:"CT",lat:41.7637,lon:-72.6851},
+  {n:"Providence",st:"RI",lat:41.8240,lon:-71.4128},
+  {n:"Concord",st:"NH",lat:43.2081,lon:-71.5376},
+  {n:"Augusta",st:"ME",lat:44.3106,lon:-69.7795},
+  {n:"Trenton",st:"NJ",lat:40.2206,lon:-74.7597},
+  {n:"Dover",st:"DE",lat:39.1582,lon:-75.5244},
+  {n:"Annapolis",st:"MD",lat:38.9784,lon:-76.4922},
+  {n:"Harrisburg",st:"PA",lat:40.2732,lon:-76.8867},
+  {n:"Richmond",st:"VA",lat:37.5407,lon:-77.4360},
+  {n:"Raleigh",st:"NC",lat:35.7796,lon:-78.6382},
+  {n:"Columbia",st:"SC",lat:34.0007,lon:-81.0348},
+  {n:"Atlanta",st:"GA",lat:33.7490,lon:-84.3880},
+  {n:"Tallahassee",st:"FL",lat:30.4383,lon:-84.2807},
+  {n:"Montgomery",st:"AL",lat:32.3792,lon:-86.3077},
+  {n:"Jackson",st:"MS",lat:32.2988,lon:-90.1848},
+  {n:"Baton Rouge",st:"LA",lat:30.4515,lon:-91.1871},
+  {n:"Austin",st:"TX",lat:30.2672,lon:-97.7431},
+  {n:"Little Rock",st:"AR",lat:34.7465,lon:-92.2896},
+  {n:"Oklahoma City",st:"OK",lat:35.4676,lon:-97.5164},
+  {n:"Santa Fe",st:"NM",lat:35.6870,lon:-105.9378},
+  {n:"Phoenix",st:"AZ",lat:33.4484,lon:-112.0740},
+  {n:"Salt Lake City",st:"UT",lat:40.7608,lon:-111.8910},
+  {n:"Carson City",st:"NV",lat:39.1638,lon:-119.7674},
+  {n:"Sacramento",st:"CA",lat:38.5816,lon:-121.4944},
+  {n:"Salem",st:"OR",lat:44.9429,lon:-123.0351},
+  {n:"Olympia",st:"WA",lat:47.0379,lon:-122.9007},
+  {n:"Boise",st:"ID",lat:43.6150,lon:-116.2023},
+  {n:"Helena",st:"MT",lat:46.5891,lon:-112.0391},
+  {n:"Bismarck",st:"ND",lat:46.8083,lon:-100.7837},
+  {n:"Pierre",st:"SD",lat:44.3683,lon:-100.3510},
+  {n:"Cheyenne",st:"WY",lat:41.1400,lon:-104.8202},
+  {n:"Denver",st:"CO",lat:39.7392,lon:-104.9903},
+  {n:"Lincoln",st:"NE",lat:40.8136,lon:-96.7026},
+  {n:"Topeka",st:"KS",lat:39.0473,lon:-95.6752},
+  {n:"Des Moines",st:"IA",lat:41.5868,lon:-93.6250},
+  {n:"St. Paul",st:"MN",lat:44.9537,lon:-93.0900},
+  {n:"Madison",st:"WI",lat:43.0731,lon:-89.4012},
+  {n:"Springfield",st:"IL",lat:39.7817,lon:-89.6501},
+  {n:"Jefferson City",st:"MO",lat:38.5767,lon:-92.1735},
+  {n:"Indianapolis",st:"IN",lat:39.7684,lon:-86.1581},
+  {n:"Lansing",st:"MI",lat:42.7325,lon:-84.5555},
+  {n:"Columbus",st:"OH",lat:39.9612,lon:-82.9988},
+  {n:"Frankfort",st:"KY",lat:38.2009,lon:-84.8733},
+  {n:"Charleston",st:"WV",lat:38.3498,lon:-81.6326},
+  {n:"New York City",st:"finish",lat:40.7128,lon:-74.0060,home:true}
+];
+const notes=[
+  "Out of the city, up I-95 into New England.",
+  "Quick hop across Connecticut into Rhode Island.",
+  "Skirt Boston's orbit and head north.",
+  "I-95 deep into Maine \u2014 pines and toll booths.",
+  "The big reset south, back past NYC. Plan a full day.",
+  "Jersey Turnpike, then over the Delaware Memorial Bridge.",
+  "Cross the head of the Chesapeake to the Bay.",
+  "Up past Baltimore's western edge on I-83.",
+  "Thread the DC sprawl \u2014 time it outside rush hour.",
+  "Easy I-85 run south.",
+  "Carolina pine country on I-95/I-20.",
+  "I-20 straight west into Georgia.",
+  "Drop down into the Florida panhandle.",
+  "Back up through south Alabama.",
+  "Across the Deep South on I-65 then I-20.",
+  "South toward bayou country.",
+  "The long Gulf-to-Texas haul on I-10.",
+  "Northeast out of Texas toward the Arkansas line.",
+  "West on I-40 across the Ouachitas into Oklahoma.",
+  "Plains tilt up into high desert.",
+  "Down through New Mexico into Sonoran heat.",
+  "Long climb north out of the desert \u2014 worth an overnight.",
+  "US-50 across Nevada, the \u201cLoneliest Road in America.\u201d",
+  "Over Donner Pass and down into California.",
+  "I-5 north, the Cascades off your right shoulder.",
+  "Short run up past Portland.",
+  "East across the Columbia River Gorge.",
+  "Up into the Montana Rockies.",
+  "The big empty across the northern plains.",
+  "Due south through the Dakotas.",
+  "Down the western flank of the Black Hills.",
+  "Quick I-25 sprint south.",
+  "Out onto the open Nebraska plains.",
+  "South into Kansas.",
+  "Northeast through the corn belt.",
+  "Up I-35 into Minnesota.",
+  "Southeast toward the Wisconsin Dells.",
+  "Around Chicago's western flank.",
+  "Over the Mississippi into Missouri.",
+  "East through St. Louis.",
+  "North across the line into Michigan.",
+  "Southeast into Ohio.",
+  "Through Cincinnati into bluegrass country.",
+  "East, climbing into the Appalachians.",
+  "The long haul back over the mountains \u2014 home."
+];
+const legs=[
+  {t:"New England",a:1,b:4},{t:"Mid-Atlantic",a:5,b:9},{t:"Southeast Coast",a:10,b:13},
+  {t:"Gulf South",a:14,b:16},{t:"South Central",a:17,b:19},{t:"Desert Southwest",a:20,b:21},
+  {t:"Great Basin",a:22,b:24},{t:"Pacific Northwest",a:25,b:27},{t:"N. Rockies & Plains",a:28,b:30},
+  {t:"Front Range",a:31,b:32},{t:"Central Plains",a:33,b:35},{t:"Upper Midwest",a:36,b:39},
+  {t:"Great Lakes & Ohio",a:40,b:42},{t:"Appalachia \u2192 home",a:43,b:44}
+];
+const doneCaps=[
+  {n:"Boston",st:"MA",lat:42.3601,lon:-71.0589},
+  {n:"Albany",st:"NY",lat:42.6526,lon:-73.7562},
+  {n:"Montpelier",st:"VT",lat:44.2601,lon:-72.5754},
+  {n:"Nashville",st:"TN",lat:36.1627,lon:-86.7816}
+];
+// The two capitals you can't drive to — shown on the Alaska & Hawaii insets
+const flyCaps=[
+  {n:"Juneau",st:"AK",lat:58.3019,lon:-134.4197,la:"end",note:"No road reaches it from the lower 48 — fly in (or take the ferry)."},
+  {n:"Honolulu",st:"HI",lat:21.3070,lon:-157.8584,note:"Fly from the West Coast, ideally bolted onto the Pacific NW leg."}
+];
+// Worth-a-stop points of interest roughly along the route (toggleable star layer)
+const gems=[
+  // New England
+  {n:"Mark Twain House",lat:41.7670,lon:-72.7010,cat:"Hidden gem · Hartford CT",note:"Twain's whimsical mansion where he wrote Tom Sawyer."},
+  {n:"The Breakers, Newport",lat:41.4699,lon:-71.2986,cat:"Landmark · RI",note:"Gilded-Age Vanderbilt mansion on the cliffs."},
+  {n:"Flume Gorge, Franconia Notch",lat:44.0976,lon:-71.6817,cat:"Nature · NH",note:"Granite gorge boardwalk in the White Mountains."},
+  {n:"Portland Head Light",lat:43.6231,lon:-70.2079,cat:"Scenic view · ME",note:"Maine's most photographed lighthouse, since 1791."},
+  // Mid-Atlantic
+  {n:"Independence Hall",lat:39.9489,lon:-75.1500,cat:"History · Philadelphia",note:"Where the Declaration and Constitution were signed."},
+  {n:"Cape Henlopen State Park",lat:38.7710,lon:-75.0920,cat:"Nature · DE",note:"Dunes, WWII watchtowers, and Atlantic beaches."},
+  {n:"Gettysburg Battlefield",lat:39.8090,lon:-77.2300,cat:"History · PA",note:"Civil-War turning point with a sweeping driving tour."},
+  {n:"Colonial Williamsburg",lat:37.2707,lon:-76.7075,cat:"History · VA",note:"Living-history town near Richmond."},
+  // Southeast Coast
+  {n:"Congaree National Park",lat:33.7948,lon:-80.7821,cat:"Nature · SC",note:"Towering old-growth bottomland forest near Columbia."},
+  {n:"MLK National Historical Park",lat:33.7556,lon:-84.3722,cat:"History · Atlanta",note:"Dr. King's birth home and church."},
+  {n:"Wakulla Springs",lat:30.2358,lon:-84.3025,cat:"Nature · FL",note:"One of the world's deepest springs, south of Tallahassee."},
+  // Gulf South
+  {n:"Edmund Pettus Bridge, Selma",lat:32.4040,lon:-87.0190,cat:"History · AL",note:"Civil-rights landmark on the road west from Montgomery."},
+  {n:"Vicksburg Military Park",lat:32.3460,lon:-90.8480,cat:"History · MS",note:"Mississippi River siege site toward Baton Rouge."},
+  {n:"Louisiana Old State Capitol",lat:30.4486,lon:-91.1900,cat:"Landmark · Baton Rouge",note:"Gothic 'castle on the river.'"},
+  // South Central
+  {n:"Buc-ee's, New Braunfels",lat:29.6800,lon:-98.1100,cat:"Roadside · TX",note:"Texas's legendary mega-stop — a road-trip rite of passage."},
+  {n:"Magnolia Market, Waco",lat:31.5560,lon:-97.1290,cat:"Hidden gem · TX",note:"The Silos shopping district right on I-35."},
+  {n:"OKC National Memorial",lat:35.4730,lon:-97.5170,cat:"History · OK",note:"Reflecting pool and Field of Empty Chairs."},
+  // Desert Southwest
+  {n:"Cadillac Ranch, Amarillo",lat:35.1872,lon:-101.9870,cat:"Roadside · TX",note:"Ten graffiti-covered Cadillacs buried nose-down on Route 66."},
+  {n:"Meow Wolf, Santa Fe",lat:35.6620,lon:-105.9890,cat:"Hidden gem · NM",note:"Surreal walk-through art installation."},
+  {n:"Petrified Forest NP",lat:35.0820,lon:-109.7800,cat:"Nature · AZ",note:"Rainbow badlands and ancient logs on I-40."},
+  {n:"Sedona Red Rocks",lat:34.8697,lon:-111.7610,cat:"Scenic view · AZ",note:"Crimson sandstone buttes north of Phoenix."},
+  // Great Basin
+  {n:"Grand Canyon (South Rim)",lat:36.0570,lon:-112.1410,cat:"Nature · AZ",note:"Worth the detour heading north toward Utah."},
+  {n:"Zion National Park",lat:37.2982,lon:-113.0263,cat:"Nature · UT",note:"Soaring red canyons on the I-15 climb to Salt Lake."},
+  {n:"Bonneville Salt Flats",lat:40.7587,lon:-113.8430,cat:"Scenic view · UT",note:"Blinding-white salt plain west of Salt Lake City."},
+  {n:"Lake Tahoe",lat:39.0968,lon:-120.0324,cat:"Scenic view · NV/CA",note:"Alpine-blue lake between Carson City and Sacramento."},
+  // Pacific Northwest
+  {n:"Crater Lake NP",lat:42.9446,lon:-122.1090,cat:"Nature · OR",note:"The deepest, bluest lake in the U.S."},
+  {n:"Silver Falls State Park",lat:44.8783,lon:-122.6560,cat:"Nature · OR",note:"Trail of Ten Falls just east of Salem."},
+  {n:"Mount Rainier NP",lat:46.8523,lon:-121.7603,cat:"Nature · WA",note:"Glaciered volcano towering over Olympia."},
+  // Northern Rockies & Plains
+  {n:"Multnomah Falls",lat:45.5762,lon:-122.1158,cat:"Scenic view · OR",note:"620-ft falls in the Columbia River Gorge."},
+  {n:"Craters of the Moon",lat:43.4160,lon:-113.5170,cat:"Nature · ID",note:"Otherworldly lava fields east of Boise."},
+  {n:"Glacier National Park",lat:48.6968,lon:-113.7180,cat:"Nature · MT",note:"Going-to-the-Sun Road — a Montana bucket-lister."},
+  {n:"Theodore Roosevelt NP",lat:46.9790,lon:-103.5387,cat:"Nature · ND",note:"Badlands and wild bison near Bismarck."},
+  {n:"Badlands National Park",lat:43.8554,lon:-101.9777,cat:"Nature · SD",note:"Striped spires en route to the Black Hills."},
+  {n:"Mount Rushmore",lat:43.8791,lon:-103.4591,cat:"Landmark · SD",note:"The four presidents in the Black Hills."},
+  {n:"Red Rocks Amphitheatre",lat:39.6655,lon:-105.2050,cat:"Scenic view · CO",note:"Concerts among giant sandstone fins outside Denver."},
+  // Central Plains
+  {n:"Brown v. Board NHS",lat:39.0386,lon:-95.6760,cat:"History · Topeka KS",note:"The school at the heart of the landmark ruling."},
+  {n:"Bridges of Madison County",lat:41.3350,lon:-94.0130,cat:"Hidden gem · IA",note:"Covered bridges southwest of Des Moines."},
+  // Upper Midwest
+  {n:"Minnehaha Falls",lat:44.9153,lon:-93.2110,cat:"Scenic view · MN",note:"53-ft waterfall in the Twin Cities."},
+  {n:"House on the Rock",lat:43.0905,lon:-90.1320,cat:"Hidden gem · WI",note:"Gloriously bizarre roadside attraction near Madison."},
+  {n:"Wisconsin Dells",lat:43.6275,lon:-89.7710,cat:"Roadside · WI",note:"Sandstone gorges and kitschy water-park town."},
+  {n:"Lincoln's Tomb, Springfield",lat:39.8240,lon:-89.6560,cat:"History · IL",note:"Honest Abe's resting place."},
+  {n:"Gateway Arch, St. Louis",lat:38.6247,lon:-90.1848,cat:"Landmark · MO",note:"630-ft stainless arch on the Mississippi."},
+  // Great Lakes & Ohio
+  {n:"Indianapolis Motor Speedway",lat:39.7950,lon:-86.2350,cat:"Landmark · IN",note:"Home of the Indy 500."},
+  {n:"The Henry Ford, Dearborn",lat:42.3030,lon:-83.2340,cat:"Hidden gem · MI",note:"Vast Americana museum near Detroit."},
+  {n:"Hocking Hills State Park",lat:39.4200,lon:-82.5400,cat:"Nature · OH",note:"Caves and waterfalls southeast of Columbus."},
+  // Appalachia -> home
+  {n:"Buffalo Trace Distillery",lat:38.2170,lon:-84.8660,cat:"Hidden gem · Frankfort KY",note:"Oldest continuously operating bourbon distillery."},
+  {n:"New River Gorge NP",lat:38.0700,lon:-81.0800,cat:"Nature · WV",note:"America's newest national park and its iconic bridge."},
+  {n:"Fallingwater",lat:39.9060,lon:-79.4680,cat:"Landmark · PA",note:"Frank Lloyd Wright's house over a waterfall, on the way home."}
+];
+
+const R=3958.8,rad=Math.PI/180,CIRC=1.18,MPH=60;
+function haversine(a,b){const dLat=(b.lat-a.lat)*rad,dLon=(b.lon-a.lon)*rad;
+  const s=Math.sin(dLat/2)**2+Math.cos(a.lat*rad)*Math.cos(b.lat*rad)*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(s));}
+function hm(h){let H=Math.floor(h),m=Math.round((h-H)*60);if(m===60){H++;m=0;}return H+"h"+(m?(" "+m+"m"):"");}
+const color=d3.interpolateRgbBasis(["#38bdf8","#34d399","#a3e635","#facc15","#fb923c","#f43f5e"]);
+
+const segs=[];
+for(let i=0;i<route.length-1;i++){
+  const mi=haversine(route[i],route[i+1])*CIRC;
+  segs.push({i,a:route[i],b:route[i+1],miles:mi,hours:mi/MPH,note:notes[i],
+    connector:route[i].home||route[i+1].home,t:i/(route.length-2)});
+}
+const totMiles=segs.reduce((s,d)=>s+d.miles,0),totHours=segs.reduce((s,d)=>s+d.hours,0);
+document.getElementById('tMiles').textContent=Math.round(totMiles/50)*50+" mi";
+document.getElementById('tHours').textContent=Math.round(totHours)+" h";
+
+const svg=d3.select("#map"),mapcol=document.querySelector(".mapcol"),tip=document.getElementById("tip");
+const defs=svg.append("defs");
+const gZoom=svg.append("g");
+const gLand=gZoom.append("g"),gSeg=gZoom.append("g"),gTrail=gZoom.append("g"),gDone=gZoom.append("g"),gGem=gZoom.append("g"),gFly=gZoom.append("g"),gStop=gZoom.append("g"),gCar=gZoom.append("g");
+const trailPath=gTrail.append("path").attr("class","trail").style("display","none");
+const carG=gCar.append("g").style("display","none");
+carG.append("text").attr("class","car").attr("text-anchor","middle").attr("dy",".34em").text("🚗");
+const STAR=d3.symbol().type(d3.symbolStar).size(46)();
+const zoom=d3.zoom().scaleExtent([1,9]).on("zoom",zoomed);
+svg.call(zoom);
+svg.on("click.tip",hideTip);  // tap empty map to dismiss a sight tooltip
+function zoomed(ev){
+  const t=ev.transform;gZoom.attr("transform",t);
+  const inv=1/t.k;  // keep point markers + labels at constant screen size
+  gStop.selectAll("g").attr("transform",function(){return `translate(${this.dataset.x},${this.dataset.y}) scale(${inv})`;});
+  gDone.selectAll("g").attr("transform",function(){return `translate(${this.dataset.x},${this.dataset.y}) scale(${inv})`;});
+  gGem.selectAll("g").attr("transform",function(){return `translate(${this.dataset.x},${this.dataset.y}) scale(${inv})`;});
+  gFly.selectAll("g").attr("transform",function(){return `translate(${this.dataset.x},${this.dataset.y}) scale(${inv})`;});
+}
+segs.forEach(s=>{
+  defs.append("marker").attr("id","ah"+s.i).attr("viewBox","0 0 10 10")
+    .attr("refX",8.5).attr("refY",5).attr("markerWidth",6).attr("markerHeight",6)
+    .attr("orient","auto-start-reverse")
+    .append("path").attr("d","M0,0 L10,5 L0,10 L3.2,5 Z")
+    .attr("fill",s.connector?"#5b6573":color(s.t));
+});
+
+let proj,path,statesFC=null,routePts=[];
+function draw(){
+  if(playing)stopPlay();
+  const W=mapcol.clientWidth,H=mapcol.clientHeight;
+  svg.attr("width",W).attr("height",H);
+  zoom.translateExtent([[0,0],[W,H]]).extent([[0,0],[W,H]]);
+  svg.call(zoom.transform,d3.zoomIdentity);
+  if(!statesFC||W<20||H<20) return;
+  const rightPad=W<700?24:150;
+  proj=d3.geoAlbersUsa().fitExtent([[16,18],[W-rightPad,H-18]],statesFC);
+  path=d3.geoPath(proj);
+
+  gLand.selectAll("path").data(statesFC.features).join("path")
+    .attr("class","state")
+    .attr("d",path)
+    .on("click",(e,d)=>{if(playing)return;const ab=NAME_ABBR[d.properties.name];if(ab){e.stopPropagation();openState(ab);}})
+    .each(function(d){ this.querySelector("title")||d3.select(this).append("title").text(d.properties.name+" — click for its guide"); });
+
+  const P=route.map(d=>proj([d.lon,d.lat]));
+  routePts=P;
+  gSeg.selectAll("path").remove();
+  let fullD="";
+  segs.forEach(s=>{
+    const p0=P[s.i],p1=P[s.i+1];if(!p0||!p1)return;
+    const mx=(p0[0]+p1[0])/2,my=(p0[1]+p1[1])/2,dx=p1[0]-p0[0],dy=p1[1]-p0[1],off=0.085;
+    const cx=mx-dy*off,cy=my+dx*off;
+    fullD+=(fullD?"":`M${p0[0]},${p0[1]}`)+` Q${cx},${cy} ${p1[0]},${p1[1]}`;
+    gSeg.append("path").attr("class","seg"+(s.connector?" connector":""))
+      .attr("d",`M${p0[0]},${p0[1]} Q${cx},${cy} ${p1[0]},${p1[1]}`)
+      .attr("stroke",s.connector?"#5b6573":color(s.t))
+      .attr("marker-end",`url(#ah${s.i})`).attr("data-seg",s.i)
+      .on("mousemove",e=>showTip(e,s))
+      .on("mouseenter",()=>hot(s.i+1)).on("mouseleave",()=>{hideTip();clearHot();});
+  });
+  trailPath.attr("d",fullD);
+  playSegCum=[0];let _c=0;
+  gSeg.selectAll("path").each(function(){_c+=this.getTotalLength();playSegCum.push(_c);});
+  playTotalLen=_c;
+  gDone.selectAll("g").remove();
+  doneCaps.forEach(d=>{const p=proj([d.lon,d.lat]);if(!p)return;
+    const g=gDone.append("g").attr("class","done cap").attr("data-st",d.st).attr("data-name",d.n).attr("data-x",p[0]).attr("data-y",p[1]).attr("transform",`translate(${p[0]},${p[1]})`);
+    g.append("circle").attr("r",4);
+    g.append("text").attr("x",7).attr("y",3).text(d.n);
+    g.on("click",e=>{e.stopPropagation();toggleVisited(d.st,e);});});
+  gStop.selectAll("g").remove();
+  route.forEach((d,i)=>{const p=P[i];if(!p)return;
+    const g=gStop.append("g").attr("class","stop"+(d.home?" home":" cap")).attr("data-x",p[0]).attr("data-y",p[1]).attr("transform",`translate(${p[0]},${p[1]})`).attr("data-stop",i);
+    if(!d.home){g.attr("data-st",d.st).attr("data-name",d.n);}
+    g.append("circle").attr("r",d.home?5:3.6).attr("fill",d.home?null:color(i/(route.length-2)));
+    if(!d.home)g.append("text").attr("x",6).attr("y",3).text(d.n);
+    else g.append("text").attr("x",6).attr("y",-6).text("NYC");
+    g.on("mouseenter",()=>{if(i>0)hot(i);}).on("mouseleave",clearHot);
+    if(!d.home)g.on("click",e=>{e.stopPropagation();toggleVisited(d.st,e);});});
+  gGem.selectAll("g").remove();
+  gems.forEach(d=>{const p=proj([d.lon,d.lat]);if(!p)return;
+    const g=gGem.append("g").attr("class","gem").attr("data-x",p[0]).attr("data-y",p[1]).attr("transform",`translate(${p[0]},${p[1]})`);
+    g.append("path").attr("d",STAR);
+    g.on("mouseenter",e=>showGemTip(e,d)).on("mousemove",e=>showGemTip(e,d)).on("mouseleave",hideTip)
+     .on("click",e=>{e.stopPropagation();showGemTip(e,d);});});
+  gFly.selectAll("g").remove();
+  flyCaps.forEach(d=>{const p=proj([d.lon,d.lat]);if(!p)return;
+    const g=gFly.append("g").attr("class","fly cap").attr("data-st",d.st).attr("data-name",d.n).attr("data-la",d.la||"").attr("data-x",p[0]).attr("data-y",p[1]).attr("transform",`translate(${p[0]},${p[1]})`);
+    g.append("circle").attr("r",3.8);
+    g.append("text").attr("x",d.la==="end"?-7:7).attr("y",3).attr("text-anchor",d.la==="end"?"end":null);
+    g.on("mouseenter",e=>showFlyTip(e,d)).on("mousemove",e=>showFlyTip(e,d)).on("mouseleave",hideTip)
+     .on("click",e=>{e.stopPropagation();toggleVisited(d.st,e);});});
+  applyToggles();
+  refreshVisited();
+}
+function showFlyTip(e,d){
+  tip.innerHTML=`<div class="route">✈ ${d.n}, ${d.st}</div>`+
+    `<div class="meta">Fly-in capital</div>`+
+    `<div class="note">${d.note}</div>`;
+  placeTip(e);}
+function showGemTip(e,d){
+  tip.innerHTML=`<div class="route">★ ${d.n}</div>`+
+    `<div class="meta">${d.cat}</div>`+
+    `<div class="note">${d.note}</div>`;
+  placeTip(e);}
+function placeTip(e){
+  if(window.matchMedia("(max-width:640px)").matches){
+    tip.classList.add("pinned");tip.style.left="";tip.style.top="";
+  }else{
+    tip.classList.remove("pinned");
+    const r=mapcol.getBoundingClientRect();
+    let x=e.clientX-r.left+14,y=e.clientY-r.top+14;
+    if(x>r.width-248)x=e.clientX-r.left-248;if(y>r.height-92)y=e.clientY-r.top-92;
+    tip.style.left=x+"px";tip.style.top=y+"px";
+  }
+  tip.classList.add("show");}
+function showTip(e,s){
+  tip.innerHTML=`<div class="route">${s.a.home?"NYC":s.a.n} \u2192 ${s.b.home?"NYC":s.b.n}</div>`+
+    `<div class="meta">\u2248 ${Math.round(s.miles/5)*5} mi \u00b7 ${hm(s.hours)} driving</div>`+
+    `<div class="note">${s.note}</div>`;
+  placeTip(e);}
+function hideTip(){tip.classList.remove("show");}
+function hot(stopIdx){clearHot();const segIdx=stopIdx-1;
+  gSeg.selectAll("path").classed("dim",true);
+  gSeg.select(`[data-seg="${segIdx}"]`).classed("dim",false).classed("hot",true).raise();
+  gStop.select(`[data-stop="${stopIdx}"]`).classed("hot",true).raise();
+  const row=document.querySelector(`.row[data-stop="${stopIdx}"]`);
+  if(row){row.classList.add("hot");row.scrollIntoView({block:"nearest",behavior:"smooth"});}}
+function clearHot(){gSeg.selectAll("path").classed("dim",false).classed("hot",false);
+  gStop.selectAll("g").classed("hot",false);
+  document.querySelectorAll(".row.hot").forEach(r=>r.classList.remove("hot"));}
+function toggleVisited(st,e){
+  if(!st)return;
+  const prev=visited.size;
+  if(visited.has(st))visited.delete(st);else visited.add(st);
+  saveVisited();refreshVisited();celebrate(prev,visited.size);
+}
+function refreshVisited(){
+  const vn=new Set([...visited].map(a=>STATE_NAME[a]));
+  gLand.selectAll("path").classed("visited",function(d){return vn.has(d.properties.name);});
+  gStop.selectAll("g.cap").each(function(){const on=visited.has(this.dataset.st);
+    d3.select(this).classed("vis",on);
+    const t=this.querySelector("text");if(t)t.textContent=this.dataset.name+(on?" ✓":"");});
+  gDone.selectAll("g.cap").each(function(){const on=visited.has(this.dataset.st);
+    d3.select(this).classed("vis",on).classed("todo",!on);
+    const t=this.querySelector("text");if(t)t.textContent=this.dataset.name+(on?" ✓":"");});
+  gFly.selectAll("g.cap").each(function(){const on=visited.has(this.dataset.st);
+    d3.select(this).classed("vis",on);
+    const t=this.querySelector("text");if(t){const base=this.dataset.name,end=this.dataset.la==="end";
+      t.textContent=end?(base+" ✈"+(on?" ✓":"")):("✈ "+base+(on?" ✓":""));}});
+  document.querySelectorAll(".row[data-st]").forEach(r=>r.classList.toggle("done",visited.has(r.dataset.st)));
+  updateProgress();
+}
+function updateProgress(){
+  const n=visited.size,pct=Math.round(n/TOTAL_CAPS*100);
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set("pCount",n);set("pPct",pct+"%");set("stopsLeft",TOTAL_CAPS-n);
+  const pb=document.getElementById("pBar");if(pb)pb.style.width=pct+"%";
+}
+function celebrate(prev,now){
+  if(now<=prev)return;
+  if(now===TOTAL_CAPS){flashToast("🎉 All 50 capitals — trip complete!");confettiBurst(2200);}
+  else if(now%10===0){flashToast("🎊 "+now+" / 50 — keep going!");confettiBurst();}
+  else flashToast("✓ "+now+" / 50 visited");
+}
+let toastT;
+function flashToast(msg){const el=document.getElementById("toast");if(!el)return;
+  el.textContent=msg;el.classList.add("show");clearTimeout(toastT);
+  toastT=setTimeout(()=>el.classList.remove("show"),1600);}
+function confettiBurst(ms){
+  const cv=document.getElementById("confetti");if(!cv)return;
+  const r=mapcol.getBoundingClientRect();cv.width=r.width;cv.height=r.height;cv.style.display="block";
+  const ctx=cv.getContext("2d"),colors=["#46e08a","#ffce4d","#38bdf8","#fb923c","#f43f5e","#a3e635"],parts=[];
+  for(let i=0;i<150;i++)parts.push({x:r.width/2,y:r.height*0.32,vx:(Math.random()-0.5)*10,vy:Math.random()*-8-3,
+    g:0.22+Math.random()*0.1,s:4+Math.random()*4,rot:Math.random()*6.3,vr:(Math.random()-0.5)*0.3,c:colors[i%6],life:1});
+  const dur=ms||1700,t0=performance.now();
+  (function frame(t){const e=t-t0;ctx.clearRect(0,0,cv.width,cv.height);
+    parts.forEach(p=>{p.vy+=p.g;p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;p.life=Math.max(0,1-e/dur);
+      ctx.save();ctx.globalAlpha=p.life;ctx.translate(p.x,p.y);ctx.rotate(p.rot);
+      ctx.fillStyle=p.c;ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.62);ctx.restore();});
+    if(e<dur)requestAnimationFrame(frame);
+    else{ctx.clearRect(0,0,cv.width,cv.height);cv.style.display="none";}})(t0);
+}
+function zoomToPoints(pts,fill=0.8,maxK=9){
+  pts=(pts||[]).filter(Boolean);if(!pts.length)return;
+  if(!showLabels){showLabels=true;bL.classList.add("on");applyToggles();}
+  const W=mapcol.clientWidth,H=mapcol.clientHeight;
+  const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);
+  const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  const w=Math.max(x1-x0,1),h=Math.max(y1-y0,1),cx=(x0+x1)/2,cy=(y0+y1)/2;
+  let k=Math.min(W/w,H/h)*fill;k=Math.max(1,Math.min(maxK,k));
+  dropHint();
+  svg.transition().duration(450).call(zoom.transform,
+    d3.zoomIdentity.translate(W/2-k*cx,H/2-k*cy).scale(k));}
+
+// panel
+const panel=document.getElementById("panel");
+const itin=document.createElement("div");itin.id="itin";panel.appendChild(itin);
+const stateView=document.createElement("div");stateView.id="stateView";panel.appendChild(stateView);
+legs.forEach(leg=>{
+  const mid=Math.round((leg.a+leg.b)/2),c=color(mid/(route.length-2));
+  const legMi=d3.sum(d3.range(leg.a,leg.b+1),i=>segs[i-1].miles);
+  const div=document.createElement("div");div.className="leg";
+  div.innerHTML=`<h2 title="Zoom to this region"><span class="dot" style="background:${c}"></span>${leg.t}<span class="lg">\u2248 ${Math.round(legMi/10)*10} mi</span></h2>`;
+  div.querySelector("h2").addEventListener("click",()=>zoomToPoints(routePts.slice(leg.a-1,leg.b+1),.8));
+  for(let i=leg.a;i<=leg.b;i++){const d=route[i],s=segs[i-1];
+    const row=document.createElement("div");row.className="row";row.dataset.stop=i;row.dataset.st=d.st;
+    row.title="Tap row to zoom \u00b7 circle to check off";
+    row.innerHTML=`<button class="chk" title="Mark visited">${i}</button><div>`+
+      `<div class="city">${d.n} <span>${d.st}</span></div>`+
+      `<div class="drive"><span class="arr">\u2197</span>\u2248 ${Math.round(s.miles/5)*5} mi \u00b7 ${hm(s.hours)}</div>`+
+      `<div class="note">${s.note}</div></div>`;
+    row.querySelector(".chk").addEventListener("click",e=>{e.stopPropagation();toggleVisited(d.st,e);});
+    row.addEventListener("mouseenter",()=>hot(i));
+    row.addEventListener("mouseleave",clearHot);
+    row.addEventListener("click",()=>{const lo=Math.max(0,i-2),hi=Math.min(route.length-1,i+1);
+      hot(i);zoomToPoints(routePts.slice(lo,hi+1),.7,6);});
+    div.appendChild(row);}
+  itin.appendChild(div);
+});
+const fl=document.createElement("div");fl.className="flights";
+fl.innerHTML=`<h2>+ Two flights</h2>`+
+ `<div class="flight"><span class="plane">\u2708</span><div><b>Juneau, AK</b> &mdash; no road reaches it from the lower 48; fly in (or take the ferry).</div></div>`+
+ `<div class="flight"><span class="plane">\u2708</span><div><b>Honolulu, HI</b> &mdash; fly from the West Coast, ideally bolted onto the Pacific Northwest leg.</div></div>`+
+ `<div class="flight" style="border-top:none;color:var(--faint)"><span style="color:var(--greendot)">\u2713</span><div>Already done (green): Boston MA, Albany NY, Montpelier VT, Nashville TN.</div></div>`;
+itin.appendChild(fl);
+
+// zoom controls
+const zc=document.getElementById("zoomctl");
+zc.querySelector('[data-z="in"]').onclick=()=>svg.transition().duration(200).call(zoom.scaleBy,1.6);
+zc.querySelector('[data-z="out"]').onclick=()=>svg.transition().duration(200).call(zoom.scaleBy,1/1.6);
+zc.querySelector('[data-z="reset"]').onclick=()=>svg.transition().duration(250).call(zoom.transform,d3.zoomIdentity);
+
+// zoom hint — fades on first map interaction or after a few seconds
+const hint=document.getElementById("zoomhint");
+let hintGone=false;
+function dropHint(){if(hintGone||!hint)return;hintGone=true;hint.classList.add("hide");setTimeout(()=>hint.remove(),700);}
+zoom.on("start.hint",dropHint);
+
+// toggles
+let showLabels=window.matchMedia("(min-width:700px)").matches,showDone=true,showGems=true;
+const bL=document.getElementById("bLabels"),bD=document.getElementById("bDone"),bG=document.getElementById("bGems"),bR=document.getElementById("bReset");
+bL.classList.toggle("on",showLabels);
+function applyToggles(){gStop.selectAll("text").style("display",showLabels?null:"none");
+  gDone.style("display",showDone?null:"none");
+  gGem.style("display",showGems?null:"none");}
+bL.onclick=()=>{showLabels=!showLabels;bL.classList.toggle("on",showLabels);applyToggles();};
+bD.onclick=()=>{showDone=!showDone;bD.classList.toggle("on",showDone);applyToggles();};
+bG.onclick=()=>{showGems=!showGems;bG.classList.toggle("on",showGems);applyToggles();};
+bR.onclick=clearHot;
+
+// ── Play the drive ──
+const bPlay=document.getElementById("bPlay"),stage=document.getElementById("stage");
+const PLAY_LABEL="▶  Play the drive";
+let playing=false,playPaused=false,playRAF=null,playStart=0,pausedAt=0,playDur=21000;
+let playSegCum=[0],playTotalLen=0;
+function playLabelFor(p){
+  const d=p*playTotalLen;let k=0;while(k<playSegCum.length-1&&playSegCum[k+1]<d)k++;
+  const a=route[k],b=route[k+1]||route[route.length-1];
+  return {from:a&&a.home?"NYC":(a?a.n:""),to:b&&b.home?"NYC":(b?b.n:"")};
+}
+function startPlay(){
+  if(!playTotalLen||!statesFC)return;
+  if(typeof exitTour==="function")exitTour();
+  playing=true;playPaused=false;pausedAt=0;
+  bPlay.classList.add("active");bPlay.textContent="■  Stop";
+  hideTip();dropHint();
+  svg.on(".zoom",null);
+  svg.call(zoom.transform,d3.zoomIdentity);
+  gSeg.selectAll("path").classed("dim",true);
+  gStop.selectAll("g").style("opacity",.35);
+  gGem.style("opacity",.22);gDone.style("opacity",.45);gFly.style("opacity",.45);
+  const tl=trailPath.node().getTotalLength();
+  trailPath.style("display",null).attr("stroke-dasharray",tl).attr("stroke-dashoffset",tl);
+  carG.style("display",null);
+  stage.classList.add("show");
+  stage.innerHTML='<span class="car">🚗</span><div class="body">'+
+    '<div class="cap-title" id="stTitle">Starting in New York City…</div>'+
+    '<div class="cap-sub" id="stSub">Driving the loop · 0%</div></div>'+
+    '<div class="grp"><button class="sbtn" id="stPause">⏸ Pause</button>'+
+    '<button class="sbtn x" id="stStop" title="Stop">✕</button></div>';
+  document.getElementById("stPause").onclick=togglePlayPause;
+  document.getElementById("stStop").onclick=stopPlay;
+  playStart=performance.now();
+  cancelAnimationFrame(playRAF);playRAF=requestAnimationFrame(playFrame);
+}
+function playFrame(t){
+  if(!playing)return;
+  if(playPaused){playRAF=requestAnimationFrame(playFrame);return;}
+  let p=(t-playStart)/playDur;if(p>1)p=1;
+  const tl=trailPath.node().getTotalLength();
+  trailPath.attr("stroke-dashoffset",tl*(1-p));
+  const pt=trailPath.node().getPointAtLength(p*tl);
+  carG.attr("transform",`translate(${pt.x},${pt.y})`);
+  const L=playLabelFor(p),st=document.getElementById("stTitle"),ss=document.getElementById("stSub");
+  if(st)st.textContent=`${L.from} → ${L.to}`;
+  if(ss)ss.textContent=`Driving the loop · ${Math.round(p*100)}%`;
+  if(p>=1){endPlay();return;}
+  playRAF=requestAnimationFrame(playFrame);
+}
+function togglePlayPause(){
+  playPaused=!playPaused;const b=document.getElementById("stPause");
+  if(playPaused){pausedAt=performance.now()-playStart;if(b)b.textContent="▶ Resume";}
+  else{playStart=performance.now()-pausedAt;if(b)b.textContent="⏸ Pause";}
+}
+function endPlay(){flashToast("🏁 "+(Math.round(totMiles/50)*50).toLocaleString()+" mi · the whole loop!");setTimeout(stopPlay,1500);}
+function stopPlay(){
+  playing=false;cancelAnimationFrame(playRAF);
+  bPlay.classList.remove("active");bPlay.textContent=PLAY_LABEL;
+  stage.classList.remove("show");stage.innerHTML="";
+  trailPath.style("display","none");carG.style("display","none");
+  gSeg.selectAll("path").classed("dim",false);
+  gStop.selectAll("g").style("opacity",null);
+  gGem.style("opacity",null);gDone.style("opacity",null);gFly.style("opacity",null);
+  svg.call(zoom);
+}
+bPlay.onclick=()=>{playing?stopPlay():startPlay();};
+
+// ── Guided region tour ──
+const bTour=document.getElementById("bTour"),TOUR_LABEL="🧭  Guided tour";
+let touring=false,tourIdx=0;
+const gemLeg=gems.map(g=>{let best=1e9,bi=1;
+  for(let i=1;i<route.length-1;i++){const dd=(route[i].lat-g.lat)**2+(route[i].lon-g.lon)**2;if(dd<best){best=dd;bi=i;}}
+  let li=legs.findIndex(L=>bi>=L.a&&bi<=L.b);return li<0?0:li;});
+function gemsForLeg(li){return gems.filter((g,i)=>gemLeg[i]===li);}
+function highlightLeg(leg){
+  gSeg.selectAll("path").classed("dim",true).classed("hot",false);
+  for(let i=leg.a-1;i<=leg.b-1;i++)gSeg.select(`[data-seg="${i}"]`).classed("dim",false).classed("hot",true).raise();
+}
+function renderTour(){
+  const leg=legs[tourIdx];
+  zoomToPoints(routePts.slice(leg.a-1,leg.b+1),.78);
+  highlightLeg(leg);
+  const cities=[];for(let i=leg.a;i<=leg.b;i++)cities.push(route[i].n);
+  const legMi=d3.sum(d3.range(leg.a,leg.b+1),i=>segs[i-1].miles);
+  const gl=gemsForLeg(tourIdx).slice(0,2).map(g=>g.n);
+  let sub=cities.join(" · ")+"  ·  ≈ "+(Math.round(legMi/10)*10).toLocaleString()+" mi";
+  if(gl.length)sub+="   ★ "+gl.join(" · ");
+  stage.classList.add("show");
+  stage.innerHTML=
+    '<button class="sbtn" id="tPrev" title="Previous region">◀</button>'+
+    '<div class="body"><div class="cap-title">'+leg.t+' <span class="rcount">Region '+(tourIdx+1)+' / '+legs.length+'</span></div>'+
+    '<div class="cap-sub">'+sub+'</div></div>'+
+    '<div class="grp"><button class="sbtn" id="tNext">'+(tourIdx<legs.length-1?"Next ▶":"Finish ✓")+'</button>'+
+    '<button class="sbtn x" id="tExit" title="Exit tour">✕</button></div>';
+  document.getElementById("tPrev").onclick=tourPrev;
+  document.getElementById("tPrev").disabled=tourIdx===0;
+  document.getElementById("tNext").onclick=tourNext;
+  document.getElementById("tExit").onclick=exitTour;
+}
+function startTour(){
+  if(playing)stopPlay();
+  touring=true;tourIdx=0;hideTip();dropHint();
+  bTour.classList.add("active");bTour.textContent="✕  Exit tour";
+  renderTour();
+}
+function tourNext(){tourIdx<legs.length-1?(tourIdx++,renderTour()):exitTour();}
+function tourPrev(){if(tourIdx>0){tourIdx--;renderTour();}}
+function exitTour(){
+  const was=touring;touring=false;
+  bTour.classList.remove("active");bTour.textContent=TOUR_LABEL;
+  stage.classList.remove("show");stage.innerHTML="";
+  gSeg.selectAll("path").classed("dim",false).classed("hot",false);clearHot();
+  if(was)svg.transition().duration(450).call(zoom.transform,d3.zoomIdentity);
+}
+bTour.onclick=()=>{touring?exitTour():startTour();};
+
+// ── Share + deep links ──
+const bShare=document.getElementById("bShare");
+function buildShareURL(){
+  const base=location.href.split("#")[0];
+  const v=[...visited].join("-");
+  return base+(v?"#v="+v:"");
+}
+bShare.onclick=async()=>{
+  const url=buildShareURL();
+  try{await navigator.clipboard.writeText(url);flashToast("🔗 Link copied — it shares your progress!");}
+  catch(e){history.replaceState(null,"","#v="+[...visited].join("-"));
+    flashToast("🔗 Progress saved to the URL — copy it from the address bar");}
+};
+function parseVisitedHash(){
+  const m=/[#&]v=([A-Za-z,\-]*)/.exec(location.hash);
+  if(m){const arr=(m[1]||"").split(/[-,]/).filter(a=>STATE_NAME[a]);visited=new Set(arr);saveVisited();}
+}
+function applyDeepLink(){
+  const lm=/[#&]leg=(\d+)/.exec(location.hash);
+  if(lm){const li=Math.max(0,Math.min(legs.length-1,+lm[1]-1));
+    zoomToPoints(routePts.slice(legs[li].a-1,legs[li].b+1),.78);}
+  if(/[#&]play=1/.test(location.hash))setTimeout(startPlay,500);
+  const sm=/[#&]state=([A-Z]{2})/.exec(location.hash);
+  if(sm&&STATE_NAME[sm[1]])setTimeout(()=>openState(sm[1]),300);
+}
+
+// ── Click-a-state guide (live from Wikipedia + Wikivoyage) ──
+const NAME_ABBR={};Object.keys(STATE_NAME).forEach(a=>NAME_ABBR[STATE_NAME[a]]=a);
+const CAPITAL={};
+route.forEach(d=>{if(d.st&&!d.home&&STATE_NAME[d.st]&&!CAPITAL[d.st])CAPITAL[d.st]={n:d.n};});
+[...doneCaps,...flyCaps].forEach(d=>{CAPITAL[d.st]={n:d.n};});
+const WP_TITLE={GA:"Georgia (U.S. state)",NY:"New York (state)",WA:"Washington (state)"};
+const WV_TITLE={GA:"Georgia (U.S. state)",NY:"New York (state)",WA:"Washington (state)"};
+const gemSt=gems.map(g=>{let best=1e9,st=null;
+  for(const s of [...route.slice(1,route.length-1),...doneCaps,...flyCaps]){
+    const dd=(s.lat-g.lat)**2+(s.lon-g.lon)**2;if(dd<best){best=dd;st=s.st;}}
+  return st;});
+function cleanWiki(s){return (s||"")
+  .replace(/<ref[^>]*>[\s\S]*?<\/ref>/gi,"").replace(/<ref[^>]*\/>/gi,"")
+  .replace(/\{\{[^{}]*\}\}/g,"")
+  .replace(/\[\[(?:[^\]|]*\|)?([^\]]+)\]\]/g,"$1")
+  .replace(/'''?/g,"")
+  .replace(/\[https?:\/\/\S+\s+([^\]]+)\]/g,"$1").replace(/\[https?:\/\/\S+\]/g,"")
+  .replace(/<[^>]+>/g,"").replace(/&nbsp;/g," ").replace(/\s+/g," ").trim();}
+function sectionText(wt,name){
+  const e=name.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+  const re=new RegExp("\\n==\\s*"+e+"\\s*==\\s*\\n([\\s\\S]*?)(?=\\n==[^=])","i");
+  const m=re.exec("\n"+(wt||"")+"\n==z\n");return m?m[1]:"";}
+function listingsFrom(txt,max){
+  const items=[],seen=new Set();
+  (txt||"").split("\n").forEach(line=>{
+    const l=line.trim();if(!l.startsWith("*"))return;
+    let name=null,m;
+    if(m=/name=\s*\[\[([^\]|]+?)(?:\|([^\]]+))?\]\]/.exec(l))name=m[2]||m[1];
+    else if(m=/name=\s*([^|}\n]+)/.exec(l))name=m[1];
+    else if(m=/\[\[([^\]|]+?)(?:\|([^\]]+))?\]\]/.exec(l))name=m[2]||m[1];
+    else if(m=/'''([^']+)'''/.exec(l))name=m[1];
+    if(!name)return;name=cleanWiki(name);if(name.length<2)return;
+    if(/^(see|do|eat|drink|buy|sleep|go|understand)$/i.test(name))return;
+    let desc="";const dm=/[–—](.+)$/.exec(l);if(dm)desc=cleanWiki(dm[1]);
+    const k=name.toLowerCase();if(seen.has(k))return;seen.add(k);
+    items.push({name,desc:desc.slice(0,170)});
+  });
+  return items.slice(0,max||8);}
+function firstProse(sec){
+  const buf=[];
+  for(const ln of (sec||"").split("\n")){
+    const t=ln.trim();
+    if(!t){if(buf.length)break;else continue;}
+    if(t.startsWith("{{")||/^\[\[(File|Image):/i.test(t)||t.startsWith("*")||t.startsWith("==")||t.startsWith("|")||t.startsWith("!")||t.startsWith(":")){if(buf.length)break;else continue;}
+    buf.push(t);
+  }
+  return cleanWiki(buf.join(" "));}
+function trimSentences(s,n){if(!s)return "";return s.split(/(?<=[.!?])\s+/).slice(0,n).join(" ");}
+function foodFrom(wt){
+  const items=[],seen=new Set();
+  ["Eat","Drink"].forEach(sec=>{(sectionText(wt,sec)||"").split("\n").forEach(line=>{
+    const m=/^\**\s*'''([^']{2,55})'''\s*[:.\-–—]?\s*(.*)$/.exec(line.trim());
+    if(!m)return;let name=cleanWiki(m[1]).replace(/[:\-]$/,"").trim();
+    const desc=cleanWiki(m[2]||"").slice(0,150),k=name.toLowerCase();
+    if(name.length<2||seen.has(k))return;
+    if(/^(see|do|eat|drink|buy|sleep|stay safe|get in|get around|by car|by plane)$/i.test(name))return;
+    seen.add(k);items.push({name,desc});});});
+  let text="";
+  if(items.length<2){
+    text=trimSentences(firstProse(sectionText(wt,"Eat")),2);
+    const dr=trimSentences(firstProse(sectionText(wt,"Drink")),1);
+    if(dr&&(text.length+dr.length)<360)text=(text?text+" ":"")+dr;
+  }
+  return {items:items.slice(0,9),text:text.slice(0,440)};}
+function dedupe(arr){const s=new Set(),r=[];for(const it of arr){const k=it.name.toLowerCase();if(s.has(k))continue;s.add(k);r.push(it);}return r;}
+const stateCache={};
+function fetchStateData(abbr){
+  if(stateCache[abbr])return Promise.resolve(stateCache[abbr]);
+  const name=STATE_NAME[abbr],cap=CAPITAL[abbr];
+  const wpT=WP_TITLE[abbr]||name,wvT=WV_TITLE[abbr]||name,capT=cap?cap.n+", "+name:null;
+  const data={name,abbr,cap:cap?cap.n:null,places:[],todo:[],food:[],gems:[]};
+  const sum=t=>"https://en.wikipedia.org/api/rest_v1/page/summary/"+encodeURIComponent(t);
+  const jobs=[
+    fetch(sum(wpT)).then(r=>r.ok?r.json():null).then(s=>{if(s){data.about=s.extract;data.img=s.thumbnail&&s.thumbnail.source;data.wpUrl=s.content_urls&&s.content_urls.desktop&&s.content_urls.desktop.page;data.nick=s.description;}}).catch(()=>{}),
+    fetch("https://en.wikivoyage.org/w/api.php?action=parse&page="+encodeURIComponent(wvT)+"&prop=wikitext&format=json&origin=*&redirects=1").then(r=>r.ok?r.json():null).then(j=>{
+      const wt=j&&j.parse&&j.parse.wikitext&&j.parse.wikitext["*"];if(!wt)return;
+      data.places=dedupe([...listingsFrom(sectionText(wt,"Other destinations"),7),...listingsFrom(sectionText(wt,"See"),5),...listingsFrom(sectionText(wt,"Cities"),5)]).slice(0,9);
+      data.todo=listingsFrom(sectionText(wt,"Do"),6);
+      data.food=foodFrom(wt);
+      data.wvUrl="https://en.wikivoyage.org/wiki/"+encodeURIComponent(wvT);
+    }).catch(()=>{})
+  ];
+  if(capT)jobs.push(fetch(sum(capT)).then(r=>r.ok?r.json():null).then(s=>{if(s){data.capAbout=s.extract;data.capImg=s.thumbnail&&s.thumbnail.source;}}).catch(()=>{}));
+  return Promise.all(jobs).then(()=>{
+    data.gems=gems.filter((g,i)=>gemSt[i]===abbr).map(g=>({name:g.n,desc:g.note}));
+    stateCache[abbr]=data;return data;});
+}
+function svEsc(s){return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function svList(items){if(!items||!items.length)return '<div class="sv-empty">Nothing listed for this one yet.</div>';
+  return items.map(it=>'<div class="sv-item"><b>'+svEsc(it.name)+"</b>"+(it.desc?' <span>— '+svEsc(it.desc)+"</span>":"")+"</div>").join("");}
+let curState=null;
+function renderStateLoading(abbr){
+  const name=STATE_NAME[abbr],cap=CAPITAL[abbr];
+  stateView.innerHTML='<button class="sv-back">← Back to route</button>'+
+    '<div class="sv-hero"><div class="sv-hero-tx"><div class="sv-state">'+name+"</div>"+
+    (cap?'<div class="sv-cap">Capital · '+svEsc(cap.n)+"</div>":"")+"</div></div>"+
+    '<div class="sv-load"><div class="spin"></div><div>Fetching '+name+'’s guide from Wikipedia &amp; Wikivoyage…</div></div>';
+  stateView.querySelector(".sv-back").onclick=closeState;
+}
+function renderState(d){
+  let h='<button class="sv-back">← Back to route</button>';
+  h+='<div class="sv-hero"'+(d.img?' style="background-image:url('+svEsc(d.img)+')"':"")+'><div class="sv-hero-tx">'+
+    '<div class="sv-state">'+d.name+"</div>"+
+    (d.cap?'<div class="sv-cap">Capital · '+svEsc(d.cap)+"</div>":"")+"</div></div>";
+  if(d.about)h+='<p class="sv-about">'+svEsc(d.about)+"</p>";
+  if(d.capAbout||d.capImg)h+='<div class="sv-capcard">'+(d.capImg?'<img src="'+svEsc(d.capImg)+'" alt="">':"")+
+    '<div><div class="t">'+svEsc(d.cap)+' <em>Capital</em></div><div class="d">'+svEsc(d.capAbout||"")+"</div></div></div>";
+  h+='<div class="sv-sec"><h3><span class="ic">📍</span>Famous places &amp; sights</h3>'+svList(d.places)+"</div>";
+  if(d.todo&&d.todo.length)h+='<div class="sv-sec"><h3><span class="ic">🎟️</span>Things to do</h3>'+svList(d.todo)+"</div>";
+  const food=d.food||{};
+  h+='<div class="sv-sec"><h3><span class="ic">🍽️</span>Eat &amp; drink — local specialties</h3>'+
+    (food.items&&food.items.length?svList(food.items):(food.text?'<div class="sv-item" style="border:none"><span>'+svEsc(food.text)+"</span></div>":'<div class="sv-empty">Nothing listed for this one yet.</div>'))+"</div>";
+  if(d.gems&&d.gems.length)h+='<div class="sv-sec"><h3><span class="ic">★</span>Hidden gems on your route</h3>'+svList(d.gems)+"</div>";
+  h+='<div class="sv-src">Live from '+(d.wpUrl?'<a href="'+svEsc(d.wpUrl)+'" target="_blank" rel="noopener">Wikipedia</a>':"Wikipedia")+
+    " &amp; "+(d.wvUrl?'<a href="'+svEsc(d.wvUrl)+'" target="_blank" rel="noopener">Wikivoyage</a>':"Wikivoyage")+". Click the map to explore another state.</div>";
+  stateView.innerHTML=h;
+  stateView.querySelector(".sv-back").onclick=closeState;
+}
+function openState(abbr){
+  if(!abbr||!STATE_NAME[abbr])return;
+  curState=abbr;hideTip();
+  itin.style.display="none";stateView.style.display="block";panel.scrollTop=0;
+  renderStateLoading(abbr);
+  requestAnimationFrame(()=>stateView.classList.add("show"));
+  fetchStateData(abbr).then(d=>{if(curState===abbr)renderState(d);}).catch(()=>{});
+}
+function closeState(){
+  curState=null;stateView.classList.remove("show");
+  setTimeout(()=>{if(!curState){stateView.style.display="none";itin.style.display="";}},250);
+}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&curState)closeState();});
+
+// load real US map, then draw
+const overlay=document.getElementById("overlay");
+function fail(){
+  overlay.innerHTML='<div>Couldn\u2019t load the U.S. map data.</div>'+
+    '<div style="font-size:12px">Check your connection and refresh \u2014 the map loads from a public CDN '+
+    '(<a href="'+US_ATLAS+'">us-atlas</a>).</div>';
+}
+if(typeof d3==="undefined"||typeof topojson==="undefined"){fail();}
+else{
+  d3.json(US_ATLAS).then(us=>{
+    statesFC=topojson.feature(us,us.objects.states);
+    overlay.style.display="none";
+    parseVisitedHash();
+    draw();
+    applyDeepLink();
+    setTimeout(dropHint,5000);
+  }).catch(fail);
+}
+let rt;window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(draw,150);});
+
+  return {
+    draw,
+    zoomToRegion(names){
+      const pts=[];
+      route.forEach((r,i)=>{ if(names.includes(r.n)&&routePts[i]) pts.push(routePts[i]); });
+      if(pts.length) setTimeout(()=>zoomToPoints(pts,.5,7),60);
+    }
+  };
+}
