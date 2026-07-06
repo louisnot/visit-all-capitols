@@ -1,0 +1,98 @@
+<div class="trip-hero">
+      <div class="trip-kicker">Trip #1 · Long weekend</div>
+      <h2>The Chicago Loop</h2>
+      <div class="trip-sub">Chicago &rarr; Springfield, IL &rarr; Indianapolis, IN &rarr; home.<br>A 4-day drive hitting two state capitals, deep-dish, Lincoln country, and the Indy 500 track.</div>
+      <div class="trip-stats">
+        <div class="trip-stat"><b id="hDays">4</b> days</div>
+        <div class="trip-stat"><b id="hCities">3</b> cities</div>
+        <div class="trip-stat"><b id="hCaps">2</b> capitals</div>
+        <div class="trip-stat"><b id="hDist">~750 mi</b> driving</div>
+        <div class="trip-stat"><b id="hTime">~12 h</b> wheel time</div>
+      </div>
+    </div>
+
+    <div class="trip-route">
+      <div class="trip-node home"><span class="dot"></span><b>Chicago</b><small>start</small></div>
+      <div class="trip-arrow">&rarr;</div>
+      <div class="trip-node"><span class="dot"></span><b>Springfield</b><small>IL &middot; capital</small></div>
+      <div class="trip-arrow">&rarr;</div>
+      <div class="trip-node"><span class="dot"></span><b>Indianapolis</b><small>IN &middot; capital</small></div>
+      <div class="trip-arrow">&rarr;</div>
+      <div class="trip-node home"><span class="dot"></span><b>Chicago</b><small>home</small></div>
+    </div>
+
+    <div class="trip-plan"><div class="tp-card">
+      <div class="tp-h">🧮 Plan it — options &amp; your chosen stops update the totals live</div>
+      <div class="tp-row">
+        <span class="tp-label">Distance in</span>
+        <div class="seg" id="tpUnits"><button data-u="mi" class="on">miles</button><button data-u="km">km</button></div>
+      </div>
+      <div class="tp-row">
+        <span class="tp-label">Route</span>
+        <select class="tp-sel" id="tpVariant">
+          <option value="weekend">Long weekend · 3 capitals · 4 days</option>
+          <option value="madison">Add Madison, WI · 4 capitals · 5 days</option>
+        </select>
+      </div>
+      <div class="tp-total">
+        <div><b id="tpDist">—</b>driving</div>
+        <div><b id="tpDrive">—</b>wheel time</div>
+        <div><b id="tpSee">—</b>sightseeing</div>
+        <div><b id="tpStops">—</b>stops chosen</div>
+      </div>
+    </div></div>
+
+    <div class="trip-hint">👆 Tap any stop to include or skip it — the totals up top update instantly.</div>
+    <div class="trip-wrap">
+      <div class="day">
+        <div class="day-h"><span class="day-n">Day 1</span><span class="day-t">Chicago &mdash; land &amp; explore</span><span class="day-count"></span><span class="day-drive">no driving</span></div>
+        <ul>
+          <li data-h="0.5"><b>Millennium Park &amp; Cloud Gate</b> &mdash; the mirror &ldquo;Bean,&rdquo; the classic first photo.</li>
+          <li data-h="2.5"><b>The Art Institute of Chicago</b> &mdash; one of the best art museums in the country.</li>
+          <li data-h="1"><b>Skydeck at Willis Tower</b> &mdash; step onto The Ledge, 103 floors up.</li>
+          <li data-h="1.5"><b>Chicago Riverwalk + architecture river cruise</b> &mdash; the best way to see the skyline.</li>
+          <li class="eat" data-h="1.5"><b>Eat:</b> deep-dish at Lou Malnati&rsquo;s or Pequod&rsquo;s, and an Italian beef at Al&rsquo;s #1.</li>
+          <li class="gem" data-h="1"><b>Hidden gem:</b> the 606 elevated trail, or the free Garfield Park Conservatory.</li>
+        </ul>
+      </div>
+
+      <div class="day">
+        <div class="day-h"><span class="day-n">Day 2</span><span class="day-t">Chicago &rarr; Springfield, IL</span><span class="day-count"></span><span class="day-drive">🚗 <b>~3.5 h</b> · 200 mi · I-55</span></div>
+        <ul>
+          <li data-h="2"><b>Morning in Chicago:</b> the Museum Campus (Field Museum, Shedd Aquarium) or the free Lincoln Park Zoo before you roll out.</li>
+          <li data-h="0.5" data-dmi="18" data-dh="0.6"><b>Route 66 kitsch on the way:</b> the Gemini Giant in Wilmington, Funks Grove maple &ldquo;sirup.&rdquo;</li>
+          <li data-h="2.5"><b>Abraham Lincoln Presidential Library &amp; Museum</b> &mdash; the headline stop, genuinely great.</li>
+          <li data-h="1"><b>Lincoln Home National Historic Site</b> &mdash; walk his actual restored neighborhood.</li>
+          <li data-h="0.75"><b>Old State Capitol</b> &mdash; where Lincoln served and gave his &ldquo;House Divided&rdquo; speech.</li>
+          <li class="eat" data-h="1"><b>Eat:</b> a Springfield &ldquo;horseshoe&rdquo; (open-face sandwich drowned in cheese sauce) + the Cozy Dog Drive In, birthplace of the corn dog.</li>
+          <li class="gem" data-h="0.5"><b>Hidden gem:</b> Lincoln&rsquo;s Tomb at Oak Ridge &mdash; rub his nose for luck.</li>
+        </ul>
+      </div>
+
+      <div class="day">
+        <div class="day-h"><span class="day-n">Day 3</span><span class="day-t">Springfield &rarr; Indianapolis, IN</span><span class="day-count"></span><span class="day-drive">🚗 <b>~3.5 h</b> · 200 mi</span></div>
+        <ul>
+          <li data-h="2"><b>Indianapolis Motor Speedway &amp; Museum</b> &mdash; take the track tour and &ldquo;kiss the bricks.&rdquo;</li>
+          <li data-h="1"><b>Canal Walk &amp; White River State Park</b> &mdash; paddle-boats, bikes, riverside strolling downtown.</li>
+          <li data-h="1.5"><b>Soldiers&rsquo; &amp; Sailors&rsquo; Monument</b> &mdash; climb it for the skyline, then wander the Mass Ave arts district.</li>
+          <li class="eat" data-h="1.5"><b>Eat:</b> a breaded pork tenderloin sandwich (Indiana classic) and the world-famous fiery shrimp cocktail at St. Elmo Steak House.</li>
+          <li class="gem" data-h="2"><b>Hidden gem:</b> Newfields / Indianapolis Museum of Art and its Art &amp; Nature Park.</li>
+        </ul>
+      </div>
+
+      <div class="day">
+        <div class="day-h"><span class="day-n">Day 4</span><span class="day-t">Indianapolis &rarr; Chicago &mdash; home the scenic way</span><span class="day-count"></span><span class="day-drive">🚗 <b>~3 h</b> · 180 mi · I-65</span></div>
+        <ul>
+          <li data-h="2" data-dmi="20" data-dh="0.5"><b>Indiana Dunes National Park</b> &mdash; the perfect last hurrah: hike the dunes, toes in Lake Michigan, and the Chicago skyline floating across the water.</li>
+          <li data-h="1.5" data-dmi="12" data-dh="0.4"><b>Optional:</b> Fair Oaks Farms right off I-65 for a dairy/ice-cream break.</li>
+          <li class="fixed"><b>Back to Chicago</b> &mdash; you&rsquo;re home by evening.</li>
+          <li class="eat" data-h="0.5"><b>Eat:</b> one last Chicago-style hot dog (no ketchup, they&rsquo;ll judge you).</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="trip-foot">
+      <h3>Good to know</h3>
+      This loop checks off <b>2 of your 50 capitals</b> &mdash; Springfield and Indianapolis. It&rsquo;s an easy triangle: no single drive is over ~3.5 hours, and every leg has a worthwhile stop. Book the Lincoln Museum and a Speedway tour ahead on busy weekends.
+      <div><button class="trip-cta" id="tripSeeMap">See this loop on the big map &rarr;</button></div>
+    </div>
