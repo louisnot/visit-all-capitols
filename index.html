@@ -211,6 +211,89 @@
   .sv-src a{color:var(--sig);text-decoration:none}
   .sv-empty{color:var(--faint);font-size:12px;padding:5px 0}
 
+  /* ── tabs + trip page ── */
+  [hidden]{display:none!important}
+  .tabnav{display:flex;gap:2px;padding:0 10px;border-bottom:1px solid var(--line);background:#0a1017;flex:none;overflow-x:auto}
+  .tabnav .tab{font:inherit;font-family:Oswald;font-weight:600;letter-spacing:.03em;font-size:13px;cursor:pointer;white-space:nowrap;
+    background:transparent;color:var(--muted);border:none;border-bottom:2.5px solid transparent;padding:11px 14px;transition:.15s}
+  .tabnav .tab:hover{color:var(--ink)}
+  .tabnav .tab.active{color:var(--ink);border-bottom-color:var(--sig)}
+  .viewpane{flex:1;min-height:0}
+  #view-map{display:flex;flex-direction:column}
+  #view-trip1{overflow-y:auto}
+
+  .trip{color:var(--ink)}
+  .trip-hero{padding:26px 20px 22px;background:radial-gradient(130% 130% at 0% 0%,#17222f,#0d1117 70%);border-bottom:1px solid var(--line)}
+  .trip-kicker{font-family:Oswald;letter-spacing:.14em;text-transform:uppercase;font-size:12px;color:var(--sig)}
+  .trip-hero h2{font-family:Oswald;font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:31px;margin:6px 0 7px;line-height:1}
+  .trip-sub{color:var(--muted);font-size:14px;line-height:1.5}
+  .trip-stats{display:flex;flex-wrap:wrap;gap:10px;margin-top:17px}
+  .trip-stat{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:8px 13px;font-size:11.5px;color:var(--muted);letter-spacing:.02em}
+  .trip-stat b{font-family:Oswald;font-size:17px;color:var(--ink);display:block;letter-spacing:.02em}
+  .trip-route{display:flex;align-items:flex-start;gap:6px;flex-wrap:nowrap;overflow-x:auto;padding:18px 20px 8px;max-width:860px;margin:0 auto}
+  .trip-node{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:82px}
+  .trip-node .dot{width:15px;height:15px;border-radius:50%;background:var(--sig);border:2px solid #0d1117;box-shadow:0 0 0 3px #f4b74030}
+  .trip-node.home .dot{background:var(--shield);box-shadow:0 0 0 3px #ffffff22}
+  .trip-node b{font-family:Oswald;font-size:13px;letter-spacing:.01em}
+  .trip-node small{font-family:Oswald;font-size:11px;color:var(--muted);text-align:center;line-height:1.2}
+  .trip-arrow{color:var(--faint);font-size:15px;padding-top:3px;flex:none}
+  .trip-wrap{max-width:860px;margin:0 auto;padding:6px 20px 8px}
+  .day{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:15px 18px;margin:13px 0}
+  .day-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .day-n{font-family:Oswald;font-weight:700;color:var(--sig);font-size:12px;letter-spacing:.09em;text-transform:uppercase}
+  .day-t{font-family:Oswald;font-weight:600;font-size:19px}
+  .day-drive{margin-left:auto;font-size:12px;color:var(--muted);font-family:Oswald;letter-spacing:.03em;white-space:nowrap}
+  .day-drive b{color:var(--sig);font-weight:600}
+  .day ul{list-style:none;margin:11px 0 0;padding:0}
+  .day-count{font-family:Oswald;font-size:11px;color:var(--greendot);letter-spacing:.03em;background:#12341f;border:1px solid #1f5133;padding:2px 9px;border-radius:999px;white-space:nowrap}
+  .trip-hint{max-width:860px;margin:14px auto 0;padding:0 20px;font-size:12px;color:var(--faint);letter-spacing:.02em}
+  .day li{padding:8px 8px 8px 26px;position:relative;font-size:13.5px;line-height:1.46;border-top:1px solid #1a212c;color:var(--muted);
+    cursor:pointer;border-radius:7px;transition:opacity .12s,background .12s;-webkit-tap-highlight-color:transparent}
+  .day li:first-child{border-top:none}
+  .day li:hover{background:#1b2431}
+  .day li b{color:var(--ink);font-weight:600}
+  .day li::before{content:"";position:absolute;left:5px;top:13px;width:11px;height:11px;border-radius:50%;box-sizing:border-box;
+    border:2px solid var(--greenline);background:var(--greenline);transition:.12s}
+  .day li.eat::before{border-color:var(--sig);background:var(--sig)}
+  .day li.gem::before{border-color:var(--gem);background:var(--gem);border-radius:2px;transform:rotate(45deg)}
+  .day li.fixed{cursor:default}
+  .day li.fixed:hover{background:none}
+  .day li.fixed::before{border-color:var(--faint);background:var(--faint)}
+  .day li.skip{opacity:.42}
+  .day li.skip b{text-decoration:line-through}
+  .day li.skip::before{background:transparent}
+  .trip-foot{max-width:860px;margin:2px auto 0;padding:8px 20px 44px;color:var(--muted);font-size:13px;line-height:1.55}
+  .trip-foot h3{font-family:Oswald;text-transform:uppercase;letter-spacing:.06em;font-size:13px;color:var(--ink);margin:16px 0 7px}
+  .trip-cta{display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-family:Oswald;font-weight:600;font-size:12.5px;letter-spacing:.03em;
+    color:#1d1407;background:var(--sig);border:none;border-radius:9px;padding:9px 15px;cursor:pointer;transition:.15s}
+  .trip-cta:hover{background:#ffca54}
+
+  .trip-plan{max-width:860px;margin:4px auto 0;padding:0 20px}
+  .tp-card{background:linear-gradient(180deg,#16202d,#131a24);border:1px solid var(--line);border-radius:14px;padding:15px 18px}
+  .tp-h{font-family:Oswald;font-weight:600;text-transform:uppercase;letter-spacing:.05em;font-size:12px;color:var(--ink);margin:0 0 6px;display:flex;align-items:center;gap:8px}
+  .tp-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:11px 0}
+  .tp-label{font-family:Oswald;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);min-width:88px}
+  .seg{display:inline-flex;background:#0b131d;border:1px solid var(--line);border-radius:9px;padding:2px}
+  .seg button{font:inherit;font-size:12px;font-family:Oswald;letter-spacing:.03em;cursor:pointer;border:none;background:transparent;color:var(--muted);border-radius:7px;padding:6px 14px;transition:.12s}
+  .seg button.on{background:var(--sig);color:#1d1407;font-weight:600}
+  .tp-sel{font:inherit;font-size:13px;background:#0b131d;color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:9px 11px;flex:1;min-width:200px;cursor:pointer}
+  .tp-opts{display:flex;flex-wrap:wrap;gap:8px}
+  .tp-chip{font:inherit;font-family:Oswald;font-size:12px;letter-spacing:.02em;cursor:pointer;background:#0b131d;color:var(--muted);
+    border:1px solid var(--line);border-radius:999px;padding:7px 13px;transition:.12s;display:inline-flex;align-items:center;gap:7px;-webkit-tap-highlight-color:transparent}
+  .tp-chip:hover{color:var(--ink);border-color:#3a4757}
+  .tp-chip.on{background:#12341f;border-color:var(--greenline);color:var(--greendot)}
+  .tp-chip .add{color:var(--faint);font-size:11px}
+  .tp-chip.on .add{color:var(--greenline)}
+  .tp-total{display:flex;gap:20px;flex-wrap:wrap;margin-top:13px;padding-top:13px;border-top:1px solid var(--line)}
+  .tp-total>div{font-family:Oswald;font-size:11px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+  .tp-total b{display:block;font-size:21px;color:var(--sig);letter-spacing:.02em;margin-bottom:1px}
+
+  @media(max-width:560px){
+    .trip-hero h2{font-size:25px}
+    .trip-hero{padding:20px 16px 18px}
+    .trip-wrap,.trip-foot{padding-left:14px;padding-right:14px}
+    .day{padding:14px 15px}
+  }
   @media(max-width:860px){
     .main{flex-direction:column}
     .mapcol{flex:none;height:50vh}
@@ -231,6 +314,11 @@
 </head>
 <body>
 <div class="wrap">
+  <nav class="tabnav">
+    <button class="tab active" data-view="map">🗺️&nbsp; The 50-Capitals Map</button>
+    <button class="tab" data-view="trip1">🧳&nbsp; Trip #1 · Chicago Loop</button>
+  </nav>
+  <div id="view-map" class="viewpane">
   <header>
     <h1>The <span class="num">50</span> Capitals Loop</h1>
     <span class="sub">NYC &rarr; 44 lower-48 capitals &rarr; NYC &middot; 4 already done &middot; Juneau &amp; Honolulu by air</span>
@@ -279,6 +367,108 @@
       <div class="overlay" id="overlay"><div class="spin"></div><div>Loading the map&hellip;</div></div>
     </div>
     <div class="panel" id="panel"></div>
+  </div>
+  </div><!-- /view-map -->
+
+  <div id="view-trip1" class="viewpane trip" hidden>
+    <div class="trip-hero">
+      <div class="trip-kicker">Trip #1 · Long weekend</div>
+      <h2>The Chicago Loop</h2>
+      <div class="trip-sub">Chicago &rarr; Springfield, IL &rarr; Indianapolis, IN &rarr; home.<br>A 4-day drive hitting two state capitals, deep-dish, Lincoln country, and the Indy 500 track.</div>
+      <div class="trip-stats">
+        <div class="trip-stat"><b id="hDays">4</b> days</div>
+        <div class="trip-stat"><b id="hCities">3</b> cities</div>
+        <div class="trip-stat"><b id="hCaps">2</b> capitals</div>
+        <div class="trip-stat"><b id="hDist">~750 mi</b> driving</div>
+        <div class="trip-stat"><b id="hTime">~12 h</b> wheel time</div>
+      </div>
+    </div>
+
+    <div class="trip-route">
+      <div class="trip-node home"><span class="dot"></span><b>Chicago</b><small>start</small></div>
+      <div class="trip-arrow">&rarr;</div>
+      <div class="trip-node"><span class="dot"></span><b>Springfield</b><small>IL &middot; capital</small></div>
+      <div class="trip-arrow">&rarr;</div>
+      <div class="trip-node"><span class="dot"></span><b>Indianapolis</b><small>IN &middot; capital</small></div>
+      <div class="trip-arrow">&rarr;</div>
+      <div class="trip-node home"><span class="dot"></span><b>Chicago</b><small>home</small></div>
+    </div>
+
+    <div class="trip-plan"><div class="tp-card">
+      <div class="tp-h">🧮 Plan it — options &amp; your chosen stops update the totals live</div>
+      <div class="tp-row">
+        <span class="tp-label">Distance in</span>
+        <div class="seg" id="tpUnits"><button data-u="mi" class="on">miles</button><button data-u="km">km</button></div>
+      </div>
+      <div class="tp-row">
+        <span class="tp-label">Route</span>
+        <select class="tp-sel" id="tpVariant">
+          <option value="weekend">Long weekend · 3 capitals · 4 days</option>
+          <option value="madison">Add Madison, WI · 4 capitals · 5 days</option>
+        </select>
+      </div>
+      <div class="tp-total">
+        <div><b id="tpDist">—</b>driving</div>
+        <div><b id="tpDrive">—</b>wheel time</div>
+        <div><b id="tpSee">—</b>sightseeing</div>
+        <div><b id="tpStops">—</b>stops chosen</div>
+      </div>
+    </div></div>
+
+    <div class="trip-hint">👆 Tap any stop to include or skip it — the totals up top update instantly.</div>
+    <div class="trip-wrap">
+      <div class="day">
+        <div class="day-h"><span class="day-n">Day 1</span><span class="day-t">Chicago &mdash; land &amp; explore</span><span class="day-count"></span><span class="day-drive">no driving</span></div>
+        <ul>
+          <li data-h="0.5"><b>Millennium Park &amp; Cloud Gate</b> &mdash; the mirror &ldquo;Bean,&rdquo; the classic first photo.</li>
+          <li data-h="2.5"><b>The Art Institute of Chicago</b> &mdash; one of the best art museums in the country.</li>
+          <li data-h="1"><b>Skydeck at Willis Tower</b> &mdash; step onto The Ledge, 103 floors up.</li>
+          <li data-h="1.5"><b>Chicago Riverwalk + architecture river cruise</b> &mdash; the best way to see the skyline.</li>
+          <li class="eat" data-h="1.5"><b>Eat:</b> deep-dish at Lou Malnati&rsquo;s or Pequod&rsquo;s, and an Italian beef at Al&rsquo;s #1.</li>
+          <li class="gem" data-h="1"><b>Hidden gem:</b> the 606 elevated trail, or the free Garfield Park Conservatory.</li>
+        </ul>
+      </div>
+
+      <div class="day">
+        <div class="day-h"><span class="day-n">Day 2</span><span class="day-t">Chicago &rarr; Springfield, IL</span><span class="day-count"></span><span class="day-drive">🚗 <b>~3.5 h</b> · 200 mi · I-55</span></div>
+        <ul>
+          <li data-h="2"><b>Morning in Chicago:</b> the Museum Campus (Field Museum, Shedd Aquarium) or the free Lincoln Park Zoo before you roll out.</li>
+          <li data-h="0.5" data-dmi="18" data-dh="0.6"><b>Route 66 kitsch on the way:</b> the Gemini Giant in Wilmington, Funks Grove maple &ldquo;sirup.&rdquo;</li>
+          <li data-h="2.5"><b>Abraham Lincoln Presidential Library &amp; Museum</b> &mdash; the headline stop, genuinely great.</li>
+          <li data-h="1"><b>Lincoln Home National Historic Site</b> &mdash; walk his actual restored neighborhood.</li>
+          <li data-h="0.75"><b>Old State Capitol</b> &mdash; where Lincoln served and gave his &ldquo;House Divided&rdquo; speech.</li>
+          <li class="eat" data-h="1"><b>Eat:</b> a Springfield &ldquo;horseshoe&rdquo; (open-face sandwich drowned in cheese sauce) + the Cozy Dog Drive In, birthplace of the corn dog.</li>
+          <li class="gem" data-h="0.5"><b>Hidden gem:</b> Lincoln&rsquo;s Tomb at Oak Ridge &mdash; rub his nose for luck.</li>
+        </ul>
+      </div>
+
+      <div class="day">
+        <div class="day-h"><span class="day-n">Day 3</span><span class="day-t">Springfield &rarr; Indianapolis, IN</span><span class="day-count"></span><span class="day-drive">🚗 <b>~3.5 h</b> · 200 mi</span></div>
+        <ul>
+          <li data-h="2"><b>Indianapolis Motor Speedway &amp; Museum</b> &mdash; take the track tour and &ldquo;kiss the bricks.&rdquo;</li>
+          <li data-h="1"><b>Canal Walk &amp; White River State Park</b> &mdash; paddle-boats, bikes, riverside strolling downtown.</li>
+          <li data-h="1.5"><b>Soldiers&rsquo; &amp; Sailors&rsquo; Monument</b> &mdash; climb it for the skyline, then wander the Mass Ave arts district.</li>
+          <li class="eat" data-h="1.5"><b>Eat:</b> a breaded pork tenderloin sandwich (Indiana classic) and the world-famous fiery shrimp cocktail at St. Elmo Steak House.</li>
+          <li class="gem" data-h="2"><b>Hidden gem:</b> Newfields / Indianapolis Museum of Art and its Art &amp; Nature Park.</li>
+        </ul>
+      </div>
+
+      <div class="day">
+        <div class="day-h"><span class="day-n">Day 4</span><span class="day-t">Indianapolis &rarr; Chicago &mdash; home the scenic way</span><span class="day-count"></span><span class="day-drive">🚗 <b>~3 h</b> · 180 mi · I-65</span></div>
+        <ul>
+          <li data-h="2" data-dmi="20" data-dh="0.5"><b>Indiana Dunes National Park</b> &mdash; the perfect last hurrah: hike the dunes, toes in Lake Michigan, and the Chicago skyline floating across the water.</li>
+          <li data-h="1.5" data-dmi="12" data-dh="0.4"><b>Optional:</b> Fair Oaks Farms right off I-65 for a dairy/ice-cream break.</li>
+          <li class="fixed"><b>Back to Chicago</b> &mdash; you&rsquo;re home by evening.</li>
+          <li class="eat" data-h="0.5"><b>Eat:</b> one last Chicago-style hot dog (no ketchup, they&rsquo;ll judge you).</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="trip-foot">
+      <h3>Good to know</h3>
+      This loop checks off <b>2 of your 50 capitals</b> &mdash; Springfield and Indianapolis. It&rsquo;s an easy triangle: no single drive is over ~3.5 hours, and every leg has a worthwhile stop. Book the Lincoln Museum and a Speedway tour ahead on busy weekends.
+      <div><button class="trip-cta" id="tripSeeMap">See this loop on the big map &rarr;</button></div>
+    </div>
   </div>
 </div>
 
@@ -530,7 +720,7 @@ function draw(){
   svg.attr("width",W).attr("height",H);
   zoom.translateExtent([[0,0],[W,H]]).extent([[0,0],[W,H]]);
   svg.call(zoom.transform,d3.zoomIdentity);
-  if(!statesFC) return;
+  if(!statesFC||W<20||H<20) return;
   const rightPad=W<700?24:150;
   proj=d3.geoAlbersUsa().fitExtent([[16,18],[W-rightPad,H-18]],statesFC);
   path=d3.geoPath(proj);
@@ -1041,6 +1231,71 @@ else{
   }).catch(fail);
 }
 let rt;window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(draw,150);});
+
+// ── view tabs (Map / Trip) ──
+const tabBtns=document.querySelectorAll(".tabnav .tab");
+const VIEWS={map:document.getElementById("view-map"),trip1:document.getElementById("view-trip1")};
+function showView(v){
+  Object.keys(VIEWS).forEach(k=>{VIEWS[k].hidden=(k!==v);});
+  tabBtns.forEach(t=>t.classList.toggle("active",t.dataset.view===v));
+  if(v==="map"&&statesFC){draw();}
+  history.replaceState(null,"",v==="trip1"?"#trip":location.pathname+location.search);
+}
+tabBtns.forEach(t=>t.onclick=()=>showView(t.dataset.view));
+const seeMap=document.getElementById("tripSeeMap");
+if(seeMap)seeMap.onclick=()=>{
+  showView("map");
+  const pts=[];route.forEach((r,i)=>{if((r.n==="Springfield"||r.n==="Indianapolis")&&routePts[i])pts.push(routePts[i]);});
+  if(pts.length)setTimeout(()=>zoomToPoints(pts,.5,7),140);
+};
+if(/^#trip/.test(location.hash))showView("trip1");
+
+// ── Trip #1 planner + per-stop toggles (live totals) ──
+const TRIP={
+  unit:"mi",
+  cityBuffer:{mi:150,h:1.8},
+  variants:{
+    weekend:{legs:[{mi:200,h:3.4},{mi:200,h:3.3},{mi:185,h:3.0}],days:4,cities:3,caps:2},
+    madison:{legs:[{mi:150,h:2.6},{mi:260,h:4.3},{mi:200,h:3.3},{mi:185,h:3.0}],days:5,cities:4,caps:3}
+  },
+  variant:"weekend"
+};
+const tpMi=mi=>TRIP.unit==="km"?Math.round(mi*1.60934/5)*5:Math.round(mi/5)*5;
+function tripCompute(){
+  const v=TRIP.variants[TRIP.variant];
+  let mi=TRIP.cityBuffer.mi,h=TRIP.cityBuffer.h,see=0,chosen=0,total=0;
+  v.legs.forEach(l=>{mi+=l.mi;h+=l.h;});
+  document.querySelectorAll("#view-trip1 .day li").forEach(li=>{
+    if(li.classList.contains("fixed"))return;
+    total++;
+    if(li.classList.contains("skip"))return;
+    chosen++;see+=parseFloat(li.dataset.h||0);
+    if(li.dataset.dmi){mi+=+li.dataset.dmi;h+=(+li.dataset.dh||0);}
+  });
+  const dist=tpMi(mi).toLocaleString("en-US")+" "+TRIP.unit;
+  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+  set("tpDist",dist);set("tpDrive","~"+Math.round(h)+" h");set("tpSee","~"+Math.round(see)+" h");set("tpStops",chosen+" / "+total);
+  set("hDist","~"+dist);set("hTime","~"+Math.round(h)+" h");set("hDays",v.days);set("hCities",v.cities);set("hCaps",v.caps);
+  document.querySelectorAll("#view-trip1 .day").forEach(day=>{
+    const lis=[...day.querySelectorAll("li")].filter(li=>!li.classList.contains("fixed"));
+    const on=lis.filter(li=>!li.classList.contains("skip")).length;
+    const c=day.querySelector(".day-count");if(c)c.textContent=on+" stop"+(on===1?"":"s");
+  });
+}
+(function initPlanner(){
+  const units=document.getElementById("tpUnits");if(!units)return;
+  document.querySelectorAll("#view-trip1 .day li").forEach(li=>{
+    if(li.classList.contains("fixed"))return;
+    li.addEventListener("click",()=>{li.classList.toggle("skip");tripCompute();});
+  });
+  units.querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    TRIP.unit=b.dataset.u;
+    units.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
+    tripCompute();
+  });
+  document.getElementById("tpVariant").onchange=e=>{TRIP.variant=e.target.value;tripCompute();};
+  tripCompute();
+})();
 </script>
 </body>
 </html>
