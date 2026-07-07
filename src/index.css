@@ -354,3 +354,22 @@
 .day.cityoff ul{display:none}
 
 .day-count:empty{display:none}
+
+/* ── reorder controls ── */
+.reorder{display:inline-flex;flex-direction:column;gap:2px;margin-right:8px;align-self:center;flex:none}
+.reorder .rbtn{font:inherit;font-size:8px;line-height:1;cursor:pointer;background:#0b131d;color:var(--muted);
+  border:1px solid var(--line);border-radius:4px;width:22px;height:15px;display:flex;align-items:center;justify-content:center;padding:0;transition:.12s}
+.reorder .rbtn:hover{color:var(--greendot);border-color:var(--greenline)}
+.reorder .rbtn:active{transform:scale(.9)}
+
+/* ── flight widget ── */
+.flight-card .tp-sel,.flight-card .tp-in{font:inherit;font-size:13px;background:#0b131d;color:var(--ink);
+  border:1px solid var(--line);border-radius:9px;padding:8px 11px;outline:none}
+.flight-card .tp-sel{flex:1;min-width:170px}
+.flight-card .tp-in{color-scheme:dark;cursor:pointer}
+.flight-card .tp-sel:focus,.flight-card .tp-in:focus{border-color:var(--sig)}
+.flight-card .tp-sel::placeholder{color:var(--faint)}
+.fl-out{font-size:12.5px;color:var(--muted);line-height:1.5;margin:12px 0 4px;min-height:18px}
+.fl-out b{color:var(--sig);font-family:Oswald;letter-spacing:.02em}
+.flight-card .trip-cta{margin-top:4px;text-decoration:none}
+.fl-note{font-size:11px;color:var(--faint);margin-top:10px;line-height:1.45}
