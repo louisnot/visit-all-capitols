@@ -373,3 +373,12 @@
 .fl-out b{color:var(--sig);font-family:Oswald;letter-spacing:.02em}
 .flight-card .trip-cta{margin-top:4px;text-decoration:none}
 .fl-note{font-size:11px;color:var(--faint);margin-top:10px;line-height:1.45}
+
+/* ── drag-to-reorder ── */
+.reorder{display:inline-flex;flex-direction:row;align-items:center;gap:5px;margin-right:8px;align-self:center;flex:none}
+.reorder .arrows{display:flex;flex-direction:column;gap:2px}
+.grip{cursor:grab;color:var(--faint);font-size:15px;line-height:1;user-select:none;padding:2px 1px}
+.grip:hover{color:var(--muted)}
+.grip:active{cursor:grabbing}
+.day.dragging{opacity:.45;outline:2px dashed var(--greenline);outline-offset:-2px}
+@media(hover:none){.grip{display:none}}
