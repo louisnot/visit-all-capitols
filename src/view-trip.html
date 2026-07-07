@@ -28,6 +28,23 @@
       </div>
     </div></div>
 
+    <div class="trip-plan"><div class="tp-card flight-card">
+      <div class="tp-h">✈️ Flying into Chicago? Get a ballpark &amp; live fares for your dates</div>
+      <div class="tp-row">
+        <span class="tp-label">Flying from</span>
+        <input id="flFrom" class="tp-sel" type="text" placeholder="e.g. Los Angeles or LAX" autocomplete="off" spellcheck="false" />
+      </div>
+      <div class="tp-row">
+        <span class="tp-label">Depart</span>
+        <input id="flDate" class="tp-in" type="date" />
+        <span class="tp-label" style="min-width:auto">Return</span>
+        <input id="flReturn" class="tp-in" type="date" />
+      </div>
+      <div class="fl-out" id="flOut"></div>
+      <a class="trip-cta" id="flGo" target="_blank" rel="noopener">🔎 See live fares on Google Flights →</a>
+      <div class="fl-note">Live prices need a booking service, which a static site can't call directly — this opens Google Flights with your route &amp; dates prefilled so you get the real numbers in one tap.</div>
+    </div></div>
+
     <div class="trip-mapwrap">
       <div class="trip-maphdr"><b>Where you'll roam</b> <span id="tripMapStates"></span></div>
       <svg id="tripMiniMap"></svg>
@@ -71,8 +88,6 @@
           <li class="gem" data-h="2"><b>Hidden gem:</b> Newfields / Indianapolis Museum of Art and its Art &amp; Nature Park.</li>
         </ul>
       </div>
-
-      <div class="trip-subhead">Push north — Wisconsin &amp; Minnesota</div>
 
       <div class="day cityoff" data-city="madison">
         <div class="day-h"><span class="day-n">Optional</span><span class="day-t">Madison, WI <span class="cap-badge">capital</span></span><span class="day-count"></span><button class="daytoggle" type="button">＋ Add city</button><span class="day-drive"></span></div>

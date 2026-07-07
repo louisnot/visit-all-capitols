@@ -21,7 +21,10 @@ export function initTripApp(){
   const setT=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
   const cardFor=id=>document.querySelector(`#view-trip1 .day[data-city="${id}"]`);
   const cityOn=c=>c.home?true:(()=>{const k=cardFor(c.id);return !!k&&!k.classList.contains("cityoff");})();
-  const includedLoop=()=>CITIES.filter(cityOn).sort((a,b)=>a.ord-b.ord);
+  // route order = the current on-screen order of the day cards (user-reorderable)
+  const cityById=id=>CITIES.find(c=>c.id===id);
+  const includedLoop=()=>[...document.querySelectorAll("#view-trip1 .day[data-city]")]
+    .map(card=>cityById(card.dataset.city)).filter(c=>c&&cityOn(c));
 
   function computeTrip(){
     const loop=includedLoop();
@@ -43,7 +46,7 @@ export function initTripApp(){
     CITIES.forEach(c=>{const card=cardFor(c.id);if(!card)return;
       const on=cityOn(c),idx=loop.indexOf(c);
       const dn=card.querySelector(".day-n"),dt=card.querySelector(".daytoggle"),dd=card.querySelector(".day-drive"),dc=card.querySelector(".day-count");
-      if(dn)dn.textContent=c.home?"Day 1":(on?"Day "+(idx+1):"Optional");
+      if(dn)dn.textContent=c.home?"Day 1":(on?"Day "+(idx+1):"");
       if(dt){dt.innerHTML=on?"✓ In the trip":"＋ Add city";dt.classList.toggle("on",on);}
       if(dd){ if(!on)dd.textContent="";
         else if(idx<=0)dd.textContent="";
@@ -111,6 +114,46 @@ export function initTripApp(){
   document.querySelectorAll("#tpUnits button").forEach(b=>b.onclick=()=>{
     unit=b.dataset.u;document.querySelectorAll("#tpUnits button").forEach(x=>x.classList.toggle("on",x===b));computeTrip();
   });
+
+  // ── reorder cities (▲ ▼) — Chicago stays the start ──
+  function moveCard(card,dir){
+    const wrap=card.parentNode;
+    if(dir<0){const prev=card.previousElementSibling;
+      if(prev&&prev.dataset.city&&prev.dataset.city!=="chicago")wrap.insertBefore(card,prev);}
+    else{const next=card.nextElementSibling;
+      if(next&&next.dataset.city)wrap.insertBefore(next,card);}
+    computeTrip();
+  }
+  document.querySelectorAll("#view-trip1 .day[data-city]").forEach(card=>{
+    if(card.dataset.city==="chicago")return;
+    const h=card.querySelector(".day-h");if(!h)return;
+    const rc=document.createElement("span");rc.className="reorder";
+    rc.innerHTML='<button class="rbtn" data-dir="-1" title="Move earlier" aria-label="Move earlier">▲</button><button class="rbtn" data-dir="1" title="Move later" aria-label="Move later">▼</button>';
+    h.insertBefore(rc,h.firstChild);
+    rc.querySelectorAll(".rbtn").forEach(b=>b.addEventListener("click",e=>{e.stopPropagation();moveCard(card,+b.dataset.dir);}));
+  });
+
+  // ── flying into Chicago: ballpark + live-fare deep link ──
+  const flFrom=document.getElementById("flFrom"),flDate=document.getElementById("flDate"),
+        flReturn=document.getElementById("flReturn"),flGo=document.getElementById("flGo"),flOut=document.getElementById("flOut");
+  const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const HIByMonth=[260,250,260,270,290,340,360,350,270,280,300,360];
+  function ballpark(dstr){
+    if(!dstr)return "";
+    const m=new Date(dstr+"T00:00").getMonth(),hi=HIByMonth[m],lo=Math.round(hi*0.55/10)*10;
+    return `Rough ballpark: <b>~$${lo}–$${hi}</b> round-trip, domestic, in ${MONTHS[m]}. Real fares depend a lot on where you fly from — tap below for live numbers.`;
+  }
+  function updateFlight(){
+    if(!flDate)return;
+    const d=flDate.value;
+    if(d&&!flReturn.value){const rd=new Date(d+"T00:00");rd.setDate(rd.getDate()+includedLoop().length);flReturn.value=rd.toISOString().slice(0,10);}
+    if(flOut)flOut.innerHTML=d?ballpark(d):"Pick a departure date for a ballpark — then check live fares.";
+    const from=(flFrom.value||"").trim();
+    const q=`flights from ${from||"your city"} to Chicago on ${d||"a date"}`+(flReturn.value?` through ${flReturn.value}`:"");
+    if(flGo)flGo.href="https://www.google.com/travel/flights?q="+encodeURIComponent(q);
+  }
+  [flFrom,flDate,flReturn].forEach(el=>el&&el.addEventListener("input",updateFlight));
+  updateFlight();
 
   computeTrip();
 }
