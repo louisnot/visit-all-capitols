@@ -115,7 +115,8 @@ export function initTripApp(){
     unit=b.dataset.u;document.querySelectorAll("#tpUnits button").forEach(x=>x.classList.toggle("on",x===b));computeTrip();
   });
 
-  // ── reorder cities (▲ ▼) — Chicago stays the start ──
+  // ── reorder cities: ▲▼ arrows (all devices) + drag handle (desktop) ──
+  const tripWrap=document.querySelector("#view-trip1 .trip-wrap");
   function moveCard(card,dir){
     const wrap=card.parentNode;
     if(dir<0){const prev=card.previousElementSibling;
@@ -124,16 +125,40 @@ export function initTripApp(){
       if(next&&next.dataset.city)wrap.insertBefore(next,card);}
     computeTrip();
   }
+  let dragCard=null;
+  function dragAfter(y){
+    const els=[...tripWrap.querySelectorAll(".day[data-city]")].filter(c=>c.dataset.city!=="chicago"&&c!==dragCard);
+    let best={off:-Infinity,el:null};
+    els.forEach(el=>{const b=el.getBoundingClientRect(),off=y-b.top-b.height/2;if(off<0&&off>best.off)best={off,el};});
+    return best.el;
+  }
+  if(tripWrap){
+    tripWrap.addEventListener("dragover",e=>{
+      if(!dragCard)return;e.preventDefault();e.dataTransfer.dropEffect="move";
+      const after=dragAfter(e.clientY);
+      if(after)tripWrap.insertBefore(dragCard,after);else tripWrap.appendChild(dragCard);
+    });
+    tripWrap.addEventListener("drop",e=>{if(dragCard){e.preventDefault();computeTrip();}});
+  }
   document.querySelectorAll("#view-trip1 .day[data-city]").forEach(card=>{
     if(card.dataset.city==="chicago")return;
     const h=card.querySelector(".day-h");if(!h)return;
     const rc=document.createElement("span");rc.className="reorder";
-    rc.innerHTML='<button class="rbtn" data-dir="-1" title="Move earlier" aria-label="Move earlier">▲</button><button class="rbtn" data-dir="1" title="Move later" aria-label="Move later">▼</button>';
+    rc.innerHTML='<span class="grip" draggable="true" title="Drag to reorder" aria-label="Drag to reorder">⠿</span>'+
+      '<span class="arrows"><button class="rbtn" data-dir="-1" title="Move earlier" aria-label="Move earlier">▲</button>'+
+      '<button class="rbtn" data-dir="1" title="Move later" aria-label="Move later">▼</button></span>';
     h.insertBefore(rc,h.firstChild);
     rc.querySelectorAll(".rbtn").forEach(b=>b.addEventListener("click",e=>{e.stopPropagation();moveCard(card,+b.dataset.dir);}));
+    const grip=rc.querySelector(".grip");
+    grip.addEventListener("dragstart",e=>{dragCard=card;card.classList.add("dragging");e.dataTransfer.effectAllowed="move";
+      try{e.dataTransfer.setData("text/plain",card.dataset.city);}catch(_){}
+      try{e.dataTransfer.setDragImage(card,24,18);}catch(_){}});
+    grip.addEventListener("dragend",()=>{if(dragCard)dragCard.classList.remove("dragging");dragCard=null;computeTrip();});
   });
 
-  // ── flying into Chicago: ballpark + live-fare deep link ──
+  // ── flying into Chicago: live fares (via serverless proxy) + ballpark + deep link ──
+  // Paste your deployed Cloudflare Worker URL here to show real fares (see serverless/README.md):
+  const FLIGHT_ENDPOINT="";
   const flFrom=document.getElementById("flFrom"),flDate=document.getElementById("flDate"),
         flReturn=document.getElementById("flReturn"),flGo=document.getElementById("flGo"),flOut=document.getElementById("flOut");
   const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -143,6 +168,22 @@ export function initTripApp(){
     const m=new Date(dstr+"T00:00").getMonth(),hi=HIByMonth[m],lo=Math.round(hi*0.55/10)*10;
     return `Rough ballpark: <b>~$${lo}–$${hi}</b> round-trip, domestic, in ${MONTHS[m]}. Real fares depend a lot on where you fly from — tap below for live numbers.`;
   }
+  let flTimer=null,flReq=0;
+  async function liveFare(){
+    if(!FLIGHT_ENDPOINT||!flDate.value||!(flFrom.value||"").trim())return;
+    const mine=++flReq;
+    flOut.innerHTML="🔄 Checking live fares…";
+    try{
+      const u=new URL(FLIGHT_ENDPOINT);
+      u.searchParams.set("from",flFrom.value.trim());
+      u.searchParams.set("depart",flDate.value);
+      if(flReturn.value)u.searchParams.set("return",flReturn.value);
+      const d=await fetch(u.toString()).then(r=>r.json());
+      if(mine!==flReq)return; // a newer request superseded this one
+      if(d&&d.price)flOut.innerHTML=`Cheapest live fare: <b>$${d.price} ${d.currency||"USD"}</b> round-trip`+(d.airline?` · ${d.airline}`:"")+" — tap below to book.";
+      else flOut.innerHTML=ballpark(flDate.value)+" <span style=\"color:var(--faint)\">(no live match — try an airport code)</span>";
+    }catch(e){if(mine===flReq)flOut.innerHTML=ballpark(flDate.value);}
+  }
   function updateFlight(){
     if(!flDate)return;
     const d=flDate.value;
@@ -151,6 +192,7 @@ export function initTripApp(){
     const from=(flFrom.value||"").trim();
     const q=`flights from ${from||"your city"} to Chicago on ${d||"a date"}`+(flReturn.value?` through ${flReturn.value}`:"");
     if(flGo)flGo.href="https://www.google.com/travel/flights?q="+encodeURIComponent(q);
+    if(FLIGHT_ENDPOINT){clearTimeout(flTimer);flTimer=setTimeout(liveFare,600);}
   }
   [flFrom,flDate,flReturn].forEach(el=>el&&el.addEventListener("input",updateFlight));
   updateFlight();
