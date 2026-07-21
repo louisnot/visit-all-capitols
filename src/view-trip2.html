@@ -1,0 +1,150 @@
+<div class="trip-hero">
+      <div class="trip-kicker">Trip #2 · Build your loop</div>
+      <h2>Cascades &amp; Rockies</h2>
+      <div class="trip-sub">Start and finish in Seattle. Toggle in the wild places — Olympic rainforest, Rainier, the Columbia Gorge, Crater Lake, the Sawtooths, Glacier, Yellowstone &amp; the Tetons — then set how many days you have and watch the difficulty light up.</div>
+      <div class="trip-stats">
+        <div class="trip-stat"><b id="hDays2">7</b> days</div>
+        <div class="trip-stat"><b id="hCities2">2</b> stops</div>
+        <div class="trip-stat"><b id="hCaps2">1</b> capitals</div>
+        <div class="trip-stat"><b id="hStatesN2">1</b> states</div>
+        <div class="trip-stat"><b id="hDist2">—</b> driving</div>
+        <div class="trip-stat"><b id="hTime2">—</b> wheel time</div>
+      </div>
+    </div>
+
+    <div class="trip-route" id="tripRibbon2"></div>
+
+    <div class="trip-plan"><div class="tp-card">
+      <div class="tp-h">🧮 Plan it — set your days, toggle stops, and the difficulty updates live</div>
+      <div class="tp-row">
+        <span class="tp-label">Days you have</span>
+        <input id="tp2Days" class="tp2-slider" type="range" min="3" max="24" value="7" aria-label="Days available" />
+        <span class="tp2-daysval"><b id="tp2DaysVal">7</b> days</span>
+      </div>
+      <div class="tp2-diffwrap">
+        <div class="tp2-diffbar"><div class="tp2-difffill" id="tp2DiffFill"></div></div>
+        <div class="tp2-difflabel" id="tp2DiffLabel">—</div>
+      </div>
+      <div class="tp-row">
+        <span class="tp-label">Distance in</span>
+        <div class="seg" id="tp2Units"><button data-u="mi" class="on">miles</button><button data-u="km">km</button></div>
+      </div>
+      <div class="tp-total">
+        <div><b id="tp2Dist">—</b>driving</div>
+        <div><b id="tp2Drive">—</b>wheel time</div>
+        <div><b id="tp2Need">—</b>days needed</div>
+        <div><b id="tp2Stops">—</b>stops chosen</div>
+      </div>
+    </div></div>
+
+    <div class="trip-mapwrap">
+      <div class="trip-maphdr"><b>Where you'll roam</b> <span id="tripMapStates2"></span></div>
+      <svg id="tripMiniMap2"></svg>
+    </div>
+
+    <div class="trip-hint">👆 Use each stop's <b>In the trip / Add</b> switch to include or drop it · drag the grip or use ▲▼ to reorder · tap a stop's activity to skip just that one.</div>
+    <div class="trip-wrap">
+
+      <div class="day" data-city="seattle">
+        <div class="day-h"><span class="day-n">Day 1</span><span class="day-t">Seattle, WA</span><span class="day-count"></span><span class="tag-home">home base</span><span class="day-drive">no driving</span></div>
+        <ul>
+          <li data-h="1.5"><b>Pike Place Market &amp; the waterfront</b> &mdash; the original, plus a ferry across Puget Sound.</li>
+          <li data-h="1"><b>Space Needle &amp; Chihuly Garden</b> &mdash; the skyline and the glass.</li>
+          <li data-h="2"><b>Day trip: Mount Rainier or Snoqualmie Falls</b> &mdash; the mountain looms over everything.</li>
+          <li class="eat" data-h="1"><b>Eat:</b> fresh salmon, oysters, and a pour-over in coffee's home town.</li>
+          <li class="gem" data-h="1"><b>Hidden gem:</b> the ferry to Bainbridge at sunset for the skyline view back.</li>
+        </ul>
+      </div>
+
+      <div class="day" data-city="olympic">
+        <div class="day-h"><span class="day-n">Day 2</span><span class="day-t">Olympia &amp; Olympic NP, WA <span class="cap-badge">capital</span></span><span class="day-count"></span><button class="daytoggle" type="button">✓ In the trip</button><span class="day-drive"></span></div>
+        <ul>
+          <li data-h="1"><b>Washington State Capitol</b> &mdash; the tallest domed capitol in the U.S.</li>
+          <li data-h="3"><b>Hoh Rain Forest</b> &mdash; moss-draped, emerald, straight out of a fantasy film.</li>
+          <li data-h="2"><b>Hurricane Ridge</b> &mdash; alpine meadows and a wall of glaciated peaks.</li>
+          <li data-h="2"><b>Ruby Beach &amp; the wild coast</b> &mdash; sea stacks, driftwood, tide pools.</li>
+          <li class="gem" data-h="1"><b>Hidden gem:</b> Lake Crescent's impossibly clear water.</li>
+        </ul>
+      </div>
+
+      <div class="day cityoff" data-city="rainier">
+        <div class="day-h"><span class="day-n">Optional</span><span class="day-t">Mount Rainier NP, WA</span><span class="day-count"></span><button class="daytoggle" type="button">＋ Add stop</button><span class="day-drive"></span></div>
+        <ul>
+          <li data-h="3"><b>Paradise wildflower meadows</b> &mdash; the classic postcard of Rainier.</li>
+          <li data-h="2"><b>Reflection Lakes</b> &mdash; the mountain mirrored, best at dawn.</li>
+          <li data-h="2"><b>Grove of the Patriarchs</b> &mdash; a boardwalk through 1,000-year-old cedars.</li>
+          <li class="gem" data-h="1"><b>Hidden gem:</b> the Skyline Trail if the snow's melted out.</li>
+        </ul>
+      </div>
+
+      <div class="day cityoff" data-city="portland">
+        <div class="day-h"><span class="day-n">Optional</span><span class="day-t">Portland &amp; the Columbia Gorge, OR</span><span class="day-count"></span><button class="daytoggle" type="button">＋ Add stop</button><span class="day-drive"></span></div>
+        <ul>
+          <li data-h="2"><b>Multnomah Falls &amp; the Historic Columbia River Highway</b> &mdash; waterfall after waterfall.</li>
+          <li data-h="2"><b>Mount Hood &amp; Timberline Lodge</b> &mdash; the peak from The Shining's exterior.</li>
+          <li data-h="1.5"><b>Portland</b> &mdash; food carts, Powell's Books, Forest Park.</li>
+          <li class="eat" data-h="1"><b>Eat:</b> Voodoo Doughnut, food-cart everything, and Oregon pinot.</li>
+        </ul>
+      </div>
+
+      <div class="day cityoff" data-city="salem">
+        <div class="day-h"><span class="day-n">Optional</span><span class="day-t">Salem &amp; the Willamette Valley, OR <span class="cap-badge">capital</span></span><span class="day-count"></span><button class="daytoggle" type="button">＋ Add stop</button><span class="day-drive"></span></div>
+        <ul>
+          <li data-h="1"><b>Oregon State Capitol</b> &mdash; the gold Pioneer on top.</li>
+          <li data-h="3"><b>Silver Falls &amp; the Trail of Ten Falls</b> &mdash; walk behind a 177-ft waterfall.</li>
+          <li data-h="2"><b>Willamette Valley wine country</b> &mdash; rolling vineyards and tasting rooms.</li>
+        </ul>
+      </div>
+
+      <div class="day cityoff" data-city="craterlake">
+        <div class="day-h"><span class="day-n">Optional</span><span class="day-t">Crater Lake NP, OR</span><span class="day-count"></span><button class="daytoggle" type="button">＋ Add stop</button><span class="day-drive"></span></div>
+        <ul>
+          <li data-h="3"><b>Rim Drive</b> &mdash; 33 miles around the deepest, bluest lake in America.</li>
+          <li data-h="2"><b>Wizard Island &amp; Cleetwood Cove</b> &mdash; the one trail down to the water.</li>
+          <li class="gem" data-h="1"><b>Hidden gem:</b> the Pinnacles &mdash; eerie volcanic spires.</li>
+        </ul>
+      </div>
+
+      <div class="day cityoff" data-city="boise">
+        <div class="day-h"><span class="day-n">Optional</span><span class="day-t">Boise &amp; the Sawtooths, ID <span class="cap-badge">capital</span></span><span class="day-count"></span><button class="daytoggle" type="button">＋ Add stop</button><span class="day-drive"></span></div>
+        <ul>
+          <li data-h="1.5"><b>Boise Greenbelt &amp; downtown</b> &mdash; a surprisingly good river city.</li>
+          <li data-h="3"><b>Stanley &amp; Redfish Lake</b> &mdash; the Sawtooth range reflected in alpine water.</li>
+          <li data-h="2"><b>Craters of the Moon</b> &mdash; a black lava landscape astronauts trained on.</li>
+        </ul>
+      </div>
+
+      <div class="day cityoff" data-city="glacier">
+        <div class="day-h"><span class="day-n">Optional</span><span class="day-t">Glacier NP &amp; Helena, MT <span class="cap-badge">capital</span></span><span class="day-count"></span><button class="daytoggle" type="button">＋ Add stop</button><span class="day-drive"></span></div>
+        <ul>
+          <li data-h="4"><b>Going-to-the-Sun Road</b> &mdash; one of the great drives on Earth.</li>
+          <li data-h="3"><b>Lake McDonald &amp; Avalanche Lake</b> &mdash; turquoise water, red rock beaches.</li>
+          <li data-h="1"><b>Helena</b> &mdash; Montana's capital and Last Chance Gulch.</li>
+          <li class="gem" data-h="1"><b>Hidden gem:</b> Many Glacier at golden hour.</li>
+        </ul>
+      </div>
+
+      <div class="day cityoff" data-city="yellowstone">
+        <div class="day-h"><span class="day-n">Optional</span><span class="day-t">Yellowstone &amp; Grand Teton, WY</span><span class="day-count"></span><button class="daytoggle" type="button">＋ Add stop</button><span class="day-drive"></span></div>
+        <ul>
+          <li data-h="3"><b>Old Faithful &amp; the geyser basins</b> &mdash; the earth breathing.</li>
+          <li data-h="2"><b>Grand Prismatic Spring</b> &mdash; the rainbow hot spring from every poster.</li>
+          <li data-h="3"><b>Grand Teton &amp; Jenny Lake</b> &mdash; the most dramatic skyline in the Rockies.</li>
+          <li data-h="2"><b>Lamar Valley</b> &mdash; bison, wolves, bears &mdash; America's Serengeti.</li>
+        </ul>
+      </div>
+
+      <div class="day cityoff" data-city="cheyenne">
+        <div class="day-h"><span class="day-n">Optional</span><span class="day-t">Cheyenne, WY <span class="cap-badge">capital</span></span><span class="day-count"></span><button class="daytoggle" type="button">＋ Add stop</button><span class="day-drive"></span></div>
+        <ul>
+          <li data-h="1"><b>Wyoming State Capitol &amp; downtown</b> &mdash; frontier and rail history.</li>
+          <li data-h="1"><b>Curt Gowdy &amp; Vedauwoo</b> &mdash; wind-carved granite on the high plains.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="trip-foot">
+      <h3>Good to know</h3>
+      This is big country — distances between the wild places are long, and the mountain roads are slow and stunning. Set your days at the top and add stops until the difficulty bar tips into amber; that's the honest edge of what's comfortable. Glacier and Yellowstone each deserve their own multi-day slice.
+      <div><button class="trip-cta" id="trip2SeeMap">See these capitals on the big map &rarr;</button></div>
+    </div>
