@@ -218,6 +218,7 @@ const defs=svg.append("defs");
 const gZoom=svg.append("g");
 const gLand=gZoom.append("g"),gSeg=gZoom.append("g"),gTrail=gZoom.append("g"),gDone=gZoom.append("g"),gGem=gZoom.append("g"),gFly=gZoom.append("g"),gStop=gZoom.append("g"),gCar=gZoom.append("g");
 const trailPath=gTrail.append("path").attr("class","trail").style("display","none");
+const flowPath=gTrail.append("path").attr("class","routeflow").style("display","none");
 const carG=gCar.append("g").style("display","none");
 carG.append("text").attr("class","car").attr("text-anchor","middle").attr("dy",".34em").text("🚗");
 const STAR=d3.symbol().type(d3.symbolStar).size(46)();
@@ -277,7 +278,7 @@ function draw(){
       .on("mousemove",e=>showTip(e,s))
       .on("mouseenter",()=>hot(s.i+1)).on("mouseleave",()=>{hideTip();clearHot();});
   });
-  trailPath.attr("d",fullD);
+  trailPath.attr("d",fullD);flowPath.attr("d",fullD);updateFlow();
   playSegCum=[0];let _c=0;
   gSeg.selectAll("path").each(function(){_c+=this.getTotalLength();playSegCum.push(_c);});
   playTotalLen=_c;
@@ -487,6 +488,16 @@ bD.onclick=()=>{showDone=!showDone;bD.classList.toggle("on",showDone);applyToggl
 bG.onclick=()=>{showGems=!showGems;bG.classList.toggle("on",showGems);applyToggles();};
 bR.onclick=clearHot;
 
+// ── ambient motion: flowing route lights + capital pulses ──
+let showMotion=!window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function updateFlow(){
+  if(flowPath)flowPath.style("display",(showMotion&&!playing&&!touring)?null:"none");
+  mapcol.classList.toggle("nomotion",!showMotion);
+}
+const bMotion=document.getElementById("bMotion");
+if(bMotion){bMotion.classList.toggle("on",showMotion);
+  bMotion.onclick=()=>{showMotion=!showMotion;bMotion.classList.toggle("on",showMotion);updateFlow();};}
+
 // ── search: jump to a capital or state ──
 const SEARCH=[];
 route.forEach(d=>{if(!d.home)SEARCH.push({t:"cap",name:d.n,st:d.st,lat:d.lat,lon:d.lon});});
@@ -540,6 +551,7 @@ function startPlay(){
   gSeg.selectAll("path").classed("dim",true);
   gStop.selectAll("g").style("opacity",.35);
   gGem.style("opacity",.22);gDone.style("opacity",.45);gFly.style("opacity",.45);
+  updateFlow();
   const tl=trailPath.node().getTotalLength();
   trailPath.style("display",null).attr("stroke-dasharray",tl).attr("stroke-dashoffset",tl);
   carG.style("display",null);
@@ -583,6 +595,7 @@ function stopPlay(){
   gStop.selectAll("g").style("opacity",null);
   gGem.style("opacity",null);gDone.style("opacity",null);gFly.style("opacity",null);
   svg.call(zoom);
+  updateFlow();
 }
 bPlay.onclick=()=>{playing?stopPlay():startPlay();};
 
@@ -622,12 +635,13 @@ function startTour(){
   if(playing)stopPlay();
   touring=true;tourIdx=0;hideTip();dropHint();
   bTour.classList.add("active");bTour.textContent="✕  Exit tour";
+  updateFlow();
   renderTour();
 }
 function tourNext(){tourIdx<legs.length-1?(tourIdx++,renderTour()):exitTour();}
 function tourPrev(){if(tourIdx>0){tourIdx--;renderTour();}}
 function exitTour(){
-  const was=touring;touring=false;
+  const was=touring;touring=false;updateFlow();
   bTour.classList.remove("active");bTour.textContent=TOUR_LABEL;
   stage.classList.remove("show");stage.innerHTML="";
   gSeg.selectAll("path").classed("dim",false).classed("hot",false);clearHot();
