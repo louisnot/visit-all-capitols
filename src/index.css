@@ -403,3 +403,26 @@
   .stop circle,.done circle,.car{animation:none!important}
   #map{animation:none}
 }
+
+/* ── Trip #2: days slider + difficulty meter + its mini-map ── */
+.tp2-slider{flex:1;min-width:150px;accent-color:var(--sig);cursor:pointer}
+.tp2-daysval{font-family:Oswald;font-size:12px;color:var(--muted);white-space:nowrap}
+.tp2-daysval b{color:var(--ink);font-size:16px}
+.tp2-diffwrap{margin:12px 0 4px}
+.tp2-diffbar{height:9px;border-radius:99px;background:#1b2431;border:1px solid var(--line);overflow:hidden}
+.tp2-difffill{height:100%;width:30%;border-radius:99px;background:#46e08a;
+  transition:width .45s cubic-bezier(.4,0,.2,1),background .45s}
+.tp2-difflabel{font-family:Oswald;font-size:12.5px;letter-spacing:.02em;margin-top:9px;color:var(--muted)}
+.tp2-difflabel b{font-weight:600}
+#tripMiniMap2{width:100%;height:280px;display:block;border:1px solid var(--line);border-radius:14px;
+  background:radial-gradient(120% 120% at 50% 0%,#141d29,#0c121b)}
+@media(max-width:560px){#tripMiniMap2{height:220px}}
+
+/* ── Trip #2 one-way finish + optimize ── */
+.trip-node.finish .dot{background:var(--greenline);box-shadow:0 0 0 3px #46e08a33}
+.trip-node.finish small{color:var(--greendot)}
+.mm-dot.finish{fill:var(--greenline);stroke:#0d1117;stroke-width:1.4}
+.tp-optimize{font:inherit;font-family:Oswald;font-weight:600;font-size:12px;letter-spacing:.03em;cursor:pointer;
+  background:#0b131d;color:var(--sig);border:1px solid #5c4711;border-radius:999px;padding:8px 14px;transition:.12s;white-space:nowrap}
+.tp-optimize:hover{background:#1a1408;border-color:var(--sig);color:#ffd76a}
+.tp-optimize:active{transform:scale(.97)}

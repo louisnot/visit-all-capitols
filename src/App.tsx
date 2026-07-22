@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import mapHtml from "./view-map.html?raw";
 import tripHtml from "./view-trip.html?raw";
+import trip2Html from "./view-trip2.html?raw";
 import { initMapApp } from "./mapApp";
 import { initTripApp } from "./tripApp";
+import { initTrip2App } from "./trip2App";
 
-type View = "map" | "trip";
+type View = "map" | "trip" | "trip2";
 
 export default function App() {
   const [view, setView] = useState<View>(
-    /(^|#)trip/.test(location.hash) ? "trip" : "map"
+    /(^|#)trip2/.test(location.hash) ? "trip2" : /(^|#)trip/.test(location.hash) ? "trip" : "map"
   );
   const mapApi = useRef<{ draw: () => void; zoomToRegion: (n: string[]) => void } | null>(null);
   const started = useRef(false);
@@ -19,48 +21,45 @@ export default function App() {
     started.current = true;
     mapApi.current = initMapApp() as any;
     initTripApp();
-    const cta = document.getElementById("tripSeeMap");
-    if (cta)
-      cta.onclick = () => {
+    initTrip2App();
+    const cta1 = document.getElementById("tripSeeMap");
+    if (cta1)
+      cta1.onclick = () => {
         setView("map");
         mapApi.current?.zoomToRegion(["Springfield", "Indianapolis"]);
+      };
+    const cta2 = document.getElementById("trip2SeeMap");
+    if (cta2)
+      cta2.onclick = () => {
+        setView("map");
+        mapApi.current?.zoomToRegion(["Olympia", "Salem", "Boise", "Helena", "Cheyenne", "Denver"]);
       };
   }, []);
 
   // Keep the URL hash in sync, and refit the map whenever it becomes visible again.
   useEffect(() => {
-    history.replaceState(null, "", view === "trip" ? "#trip" : location.pathname + location.search);
+    const hash =
+      view === "trip" ? "#trip" : view === "trip2" ? "#trip2" : location.pathname + location.search;
+    history.replaceState(null, "", hash);
     if (view === "map") mapApi.current?.draw();
   }, [view]);
+
+  const tab = (id: View, label: string) => (
+    <button className={"tab" + (view === id ? " active" : "")} onClick={() => setView(id)}>
+      {label}
+    </button>
+  );
 
   return (
     <div className="wrap">
       <nav className="tabnav">
-        <button
-          className={"tab" + (view === "map" ? " active" : "")}
-          onClick={() => setView("map")}
-        >
-          🗺️&nbsp; The 50-Capitals Map
-        </button>
-        <button
-          className={"tab" + (view === "trip" ? " active" : "")}
-          onClick={() => setView("trip")}
-        >
-          🧳&nbsp; Trip #1 · Chicago Loop
-        </button>
+        {tab("map", "🗺️  The 50-Capitals Map")}
+        {tab("trip", "🧳  Trip #1 · Chicago Loop")}
+        {tab("trip2", "🏔️  Trip #2 · Cascades & Rockies")}
       </nav>
-      <div
-        id="view-map"
-        className="viewpane"
-        hidden={view !== "map"}
-        dangerouslySetInnerHTML={{ __html: mapHtml }}
-      />
-      <div
-        id="view-trip1"
-        className="viewpane trip"
-        hidden={view !== "trip"}
-        dangerouslySetInnerHTML={{ __html: tripHtml }}
-      />
+      <div id="view-map" className="viewpane" hidden={view !== "map"} dangerouslySetInnerHTML={{ __html: mapHtml }} />
+      <div id="view-trip1" className="viewpane trip" hidden={view !== "trip"} dangerouslySetInnerHTML={{ __html: tripHtml }} />
+      <div id="view-trip2" className="viewpane trip" hidden={view !== "trip2"} dangerouslySetInnerHTML={{ __html: trip2Html }} />
     </div>
   );
 }
