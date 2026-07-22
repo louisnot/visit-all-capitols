@@ -1,7 +1,7 @@
 <div class="trip-hero">
       <div class="trip-kicker">Trip #2 · Build your loop</div>
       <h2>Cascades &amp; Rockies</h2>
-      <div class="trip-sub">Start and finish in Seattle. Toggle in the wild places — Olympic rainforest, Rainier, the Columbia Gorge, Crater Lake, the Sawtooths, Glacier, Yellowstone &amp; the Tetons — then set how many days you have and watch the difficulty light up.</div>
+      <div class="trip-sub">Start in Seattle and drive east — no backtrack. You <b>finish out in the Rockies</b> (Montana, Wyoming, Idaho, or even Colorado) and fly home from there. Toggle in the wild places, set your days, and watch the difficulty light up.</div>
       <div class="trip-stats">
         <div class="trip-stat"><b id="hDays2">7</b> days</div>
         <div class="trip-stat"><b id="hCities2">2</b> stops</div>
@@ -24,6 +24,10 @@
       <div class="tp2-diffwrap">
         <div class="tp2-diffbar"><div class="tp2-difffill" id="tp2DiffFill"></div></div>
         <div class="tp2-difflabel" id="tp2DiffLabel">—</div>
+      </div>
+      <div class="tp-row">
+        <span class="tp-label">Route</span>
+        <button class="tp-optimize" id="tp2Optimize" type="button">⚡ Optimize order — least driving from Seattle</button>
       </div>
       <div class="tp-row">
         <span class="tp-label">Distance in</span>
@@ -141,10 +145,20 @@
           <li data-h="1"><b>Curt Gowdy &amp; Vedauwoo</b> &mdash; wind-carved granite on the high plains.</li>
         </ul>
       </div>
+
+      <div class="day cityoff" data-city="denver">
+        <div class="day-h"><span class="day-n">Optional</span><span class="day-t">Denver &amp; Rocky Mountain NP, CO <span class="cap-badge">capital</span></span><span class="day-count"></span><button class="daytoggle" type="button">＋ Add stop</button><span class="day-drive"></span></div>
+        <ul>
+          <li data-h="4"><b>Rocky Mountain NP &amp; Trail Ridge Road</b> &mdash; above the treeline at 12,000 ft, elk everywhere.</li>
+          <li data-h="1.5"><b>Denver</b> &mdash; the Mile-High City, with Red Rocks Amphitheatre nearby.</li>
+          <li data-h="2"><b>Garden of the Gods &amp; Pikes Peak</b> &mdash; red sandstone fins and a drivable 14er.</li>
+          <li class="gem" data-h="1"><b>Hidden gem:</b> Estes Park &amp; the Stanley Hotel (yes, <em>that</em> one).</li>
+        </ul>
+      </div>
     </div>
 
     <div class="trip-foot">
       <h3>Good to know</h3>
-      This is big country — distances between the wild places are long, and the mountain roads are slow and stunning. Set your days at the top and add stops until the difficulty bar tips into amber; that's the honest edge of what's comfortable. Glacier and Yellowstone each deserve their own multi-day slice.
+      This is big country — distances between the wild places are long, and the mountain roads are slow and stunning. It's <b>one-way</b>: fly home from wherever you finish (Bozeman, Jackson, Boise, or Denver), so there's no long drive back to Seattle. Hit <b>⚡ Optimize</b> to reorder your picks into the least-driving path, then add stops until the difficulty bar tips into amber — the honest edge of what's comfortable. Glacier and Yellowstone each deserve their own multi-day slice.
       <div><button class="trip-cta" id="trip2SeeMap">See these capitals on the big map &rarr;</button></div>
     </div>

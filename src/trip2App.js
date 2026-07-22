@@ -14,8 +14,9 @@ export function initTrip2App(){
     {id:"glacier",    disp:"Glacier NP",  st:"MT", cap:1,         lat:47.6000, lon:-113.4300, ord:7, stay:2.5},
     {id:"yellowstone",disp:"Yellowstone", st:"WY", cap:0,         lat:44.4280, lon:-110.5885, ord:8, stay:3},
     {id:"cheyenne",   disp:"Cheyenne",    st:"WY", cap:1,         lat:41.1400, lon:-104.8202, ord:9, stay:0.5},
+    {id:"denver",     disp:"Denver",      st:"CO", cap:1,         lat:39.7392, lon:-104.9903, ord:10, stay:2},
   ];
-  const STFULL={WA:"Washington",OR:"Oregon",ID:"Idaho",MT:"Montana",WY:"Wyoming"};
+  const STFULL={WA:"Washington",OR:"Oregon",ID:"Idaho",MT:"Montana",WY:"Wyoming",CO:"Colorado"};
   let unit="mi";
   const R=3958.8, rad=Math.PI/180;
   function hav(a,b){const dLat=(b.lat-a.lat)*rad,dLon=(b.lon-a.lon)*rad;
@@ -38,7 +39,7 @@ export function initTrip2App(){
 
   function computeTrip(){
     const loop=loopNow();
-    const seq=loop.length>1?[...loop,loop[0]]:loop;
+    const seq=loop;                              // one-way: Seattle → … → finish (no return)
     let miles=0;for(let i=0;i<seq.length-1;i++)miles+=hav(seq[i],seq[i+1])*1.25;
     miles+=loop.length*25;                       // in-town / trailhead driving
     const driveH=miles/55;                        // scenic mountain roads are slow
@@ -71,7 +72,8 @@ export function initTrip2App(){
       if(dd){ if(!on)dd.textContent="";
         else if(idx<=0)dd.textContent="";
         else{const prev=loop[idx-1],raw=hav(prev,c)*1.25,mi=Math.round(raw/5)*5;
-          dd.innerHTML=`🚗 <b>~${(raw/55).toFixed(1)} h</b> · ${mi} mi · from ${prev.disp}`;}}
+          dd.innerHTML=`🚗 <b>~${(raw/55).toFixed(1)} h</b> · ${mi} mi · from ${prev.disp}`
+            +(idx===loop.length-1?' · 🏁 <b>finish</b>':'');}}
       if(dc){const lis=[...card.querySelectorAll("li")].filter(li=>!li.classList.contains("fixed"));
         const onc=lis.filter(li=>!li.classList.contains("skip")).length;
         dc.textContent=on?onc+" stop"+(onc===1?"":"s"):"";}
@@ -82,11 +84,12 @@ export function initTrip2App(){
 
   function renderRibbon(loop){
     const el=document.getElementById("tripRibbon2");if(!el)return;
-    const nodes=loop.length?[...loop,loop[0]]:loop;
-    el.innerHTML=nodes.map((c,i)=>{
-      const sub=c.home?(i===0?"start":"home"):(c.cap?c.st+" · capital":c.st);
-      return `<div class="trip-node${c.home?" home":""}"><span class="dot"></span><b>${c.disp}</b><small>${sub}</small></div>`
-        +(i<nodes.length-1?'<div class="trip-arrow">→</div>':"");
+    el.innerHTML=loop.map((c,i)=>{
+      const last=i===loop.length-1&&loop.length>1;
+      const sub=c.home?"start":(last?"finish":(c.cap?c.st+" · capital":c.st));
+      const cls="trip-node"+(c.home?" home":"")+(last?" finish":"");
+      return `<div class="${cls}"><span class="dot"></span><b>${c.disp}</b><small>${sub}</small></div>`
+        +(i<loop.length-1?'<div class="trip-arrow">→</div>':"");
     }).join("");
   }
 
@@ -106,13 +109,13 @@ export function initTrip2App(){
     svg.selectAll("*").remove();
     svg.append("g").selectAll("path").data(feats).join("path")
       .attr("d",d3.geoPath(proj)).attr("class",f=>"mm-state"+(full.has(f.properties.name)?" on":""));
-    const nodes=loop.length?[...loop,loop[0]]:loop;
+    const nodes=loop;                            // one-way path, no return leg
     const line=nodes.map(c=>proj([c.lon,c.lat])).filter(Boolean);
     if(line.length>1)svg.append("path").attr("class","mm-route").attr("d","M"+line.map(p=>p.join(",")).join("L"));
-    const seen=new Set();
-    nodes.forEach(c=>{if(seen.has(c.id))return;seen.add(c.id);const p=proj([c.lon,c.lat]);if(!p)return;
+    nodes.forEach((c,i)=>{const p=proj([c.lon,c.lat]);if(!p)return;
+      const last=i===nodes.length-1&&nodes.length>1;
       const g=svg.append("g").attr("transform",`translate(${p[0]},${p[1]})`);
-      g.append("circle").attr("class","mm-dot"+(c.home?" home":"")).attr("r",4.5);
+      g.append("circle").attr("class","mm-dot"+(c.home?" home":"")+(last?" finish":"")).attr("r",last?5.5:4.5);
       const flip=p[0]>W-72;
       g.append("text").attr("class","mm-lab").attr("x",flip?-8:8).attr("y",3).attr("text-anchor",flip?"end":"start").text(c.disp);});
     const el=document.getElementById("tripMapStates2");
@@ -177,6 +180,20 @@ export function initTrip2App(){
       try{e.dataTransfer.setDragImage(card,24,18);}catch(_){}});
     grip.addEventListener("dragend",()=>{if(dragCard)dragCard.classList.remove("dragging");dragCard=null;computeTrip();});
   });
+
+  // ── optimize: shortest one-way path from Seattle (nearest-neighbour) ──
+  function optimizeOrder(){
+    const inc=loopNow();if(inc.length<3)return;
+    const home=inc[0],pool=inc.slice(1),path=[home];let cur=home;
+    while(pool.length){let bi=0,bd=Infinity;
+      pool.forEach((c,i)=>{const d=hav(cur,c);if(d<bd){bd=d;bi=i;}});
+      cur=pool.splice(bi,1)[0];path.push(cur);}
+    path.forEach(c=>tripWrap.appendChild(cardFor(c.id)));
+    CITIES.forEach(c=>{if(!c.home&&!cityOn(c))tripWrap.appendChild(cardFor(c.id));});
+    computeTrip();
+  }
+  const optBtn=document.getElementById("tp2Optimize");
+  if(optBtn)optBtn.addEventListener("click",optimizeOrder);
 
   computeTrip();
 }

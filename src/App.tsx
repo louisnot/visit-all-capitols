@@ -32,7 +32,7 @@ export default function App() {
     if (cta2)
       cta2.onclick = () => {
         setView("map");
-        mapApi.current?.zoomToRegion(["Olympia", "Salem", "Boise", "Helena", "Cheyenne"]);
+        mapApi.current?.zoomToRegion(["Olympia", "Salem", "Boise", "Helena", "Cheyenne", "Denver"]);
       };
   }, []);
 
