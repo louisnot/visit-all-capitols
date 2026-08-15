@@ -209,7 +209,7 @@
   .tabnav .tab.active{color:var(--ink);border-bottom-color:var(--sig)}
   .viewpane{flex:1;min-height:0}
   #view-map{display:flex;flex-direction:column}
-  #view-trip1{overflow-y:auto}
+  #view-trip2{overflow-y:auto}
 
   .trip{color:var(--ink)}
   .trip-hero{padding:26px 20px 22px;background:radial-gradient(130% 130% at 0% 0%,#17222f,#0d1117 70%);border-bottom:1px solid var(--line)}
