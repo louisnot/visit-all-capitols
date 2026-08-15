@@ -10,7 +10,7 @@ const STATE_NAME={AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"Califo
   NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",
   OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",
   TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming"};
-const TOTAL_CAPS=50, DEFAULT_VISITED=["MA","NY","VT","TN"];
+const TOTAL_CAPS=50, DEFAULT_VISITED=["MA","NY","VT","TN","WI"];
 function loadVisited(){
   try{const s=localStorage.getItem("caps-visited");if(s)return new Set(JSON.parse(s));}catch(e){}
   return new Set(DEFAULT_VISITED);
